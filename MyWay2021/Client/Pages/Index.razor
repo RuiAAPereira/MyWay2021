@@ -1,0 +1,14 @@
+﻿@page "/"
+
+@using MyWay2021.Client.Shared.Calendario
+
+<AuthorizeView>
+    <Authorized>
+        <h1>Olá @context.User.Identity.Name !!</h1>
+        <p>Bem-Vindo.</p>
+
+    </Authorized>
+    <Authorizing>
+        <h1>Loading ...</h1>
+    </Authorizing>
+</AuthorizeView>

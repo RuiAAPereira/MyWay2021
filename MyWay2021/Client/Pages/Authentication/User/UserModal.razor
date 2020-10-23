@@ -1,0 +1,265 @@
+﻿@using Microsoft.AspNetCore.Components
+@using System.Collections.Generic
+
+@inject IToastService toastService
+@inject AppStateProvider authStateProvider
+@inject HttpClient http
+@inject IJSRuntime js
+
+<div class="modal fade" id="userModal" tabindex="-1"
+     role="dialog" aria-labelledby="userModal"
+     aria-hidden="true" backdrop="static">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="CustomHeader">@CustomHeader</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <EditForm Model="@ModelUser" OnValidSubmit="@HandleValidSubmit">
+                <div class="modal-body">
+                    <div class="mx-3">
+                        <DataAnnotationsValidator />
+                        <input type="hidden" @bind-value="@ModelUser.Id" />
+                        <div class="form-group row">
+                            <SfTextBox Placeholder="Nome" @bind-Value="@ModelUser.Name"
+                                       FloatLabelType="@FloatLabelType.Auto" Type="InputType.Text"></SfTextBox>
+                            <ValidationMessage For="@(() => ModelUser.Name)" />
+                        </div>
+                        <div class="form-group row">
+                            <SfTextBox Placeholder="UserName" @bind-Value="@ModelUser.UserName"
+                                       FloatLabelType="@FloatLabelType.Auto" Type="InputType.Text"></SfTextBox>
+                            <ValidationMessage For="@(() => ModelUser.UserName)" />
+                        </div>
+                        <div class="form-group row">
+                            <SfTextBox Placeholder="Email" @bind-Value="@ModelUser.Email"
+                                       FloatLabelType="@FloatLabelType.Auto" Type="InputType.Email"></SfTextBox>
+                            <ValidationMessage For="@(() => ModelUser.Email)" />
+                        </div>
+                        <div class="form-group row">
+                            <SfTextBox Placeholder="Password" @bind-Value="@ModelUser.Password"
+                                       FloatLabelType="@FloatLabelType.Auto" Type="InputType.Password"></SfTextBox>
+                            <ValidationMessage For="@(() => ModelUser.Password)" />
+                        </div>
+                        <div class="form-group row">
+                            <SfTextBox Placeholder="Confirmar password" @bind-Value="@ModelUser.PasswordConfirm"
+                                       FloatLabelType="@FloatLabelType.Auto" Type="InputType.Password"></SfTextBox>
+                        </div>
+                        <div class="form-group row">
+                            <label for="colFormLabel" class="col-sm-4 col-form-label">Tipo</label>
+                            <div class="col-sm-8">
+                                <SfDropDownList TValue="Guid" TItem="RegisterRoles"
+                                                PopupHeight="230px" Placeholder="Select a game"
+                                                Value="@OwnedRoleId" DataSource="@RoleList">
+                                    <DropDownListFieldSettings Text="Name" Value="Id"></DropDownListFieldSettings>
+                                </SfDropDownList>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            @if (SelectedIds != null)
+                            {
+                                <label for="colFormLabel" class="col-sm-4 col-form-label">UH's</label>
+                                <div class="col-sm-8">
+                                    <CheckBoxList Data="@UhList" TextField="@((item)=>item.Nome)"
+                                                  ValueField="@((item)=>item.ID)" SelectedValues="@SelectedIds" />
+
+                                </div>
+                            }
+                        </div>
+                        <div class="form-group row">
+                            <span style="color:red">@strError</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success"
+                            data-toggle="tooltip" data-placement="top"
+                            title="Submeter formulário">
+                        <i class="fas fa-save"></i>&nbsp;Gravar
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-undo"></i>&nbsp;Cancelar
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+    //private SfDialog UserDialog;
+    //[Parameter] public bool UserDialogVisible { get; set; }
+    [Parameter] public RegisterUser ModelUser { get; set; }
+    [Parameter] public Uh[] UhList { get; set; }
+    [Parameter] public RegisterRoles[] RoleList { get; set; }
+    [Parameter] public RegisterUserRole[] UserRoles { get; set; }
+    [Parameter] public RegisterUserUh[] UserUhs { get; set; }
+
+    [Parameter] public Action DataChanged { get; set; }
+    [Parameter] public RenderFragment CustomHeader { get; set; }
+    [Parameter] public bool IsEdit { get; set; }
+
+    RegisterUser registerUser { get; set; } = new RegisterUser();
+    RegisterUserRole registerUserRole { get; set; } = new RegisterUserRole();
+    RegisterUserUh registerUserUh { get; set; } = new RegisterUserUh();
+
+    public Guid OwnedRoleId = new Guid();
+    protected List<Guid> SelectedIds = new List<Guid>();
+    Guid UserID = Guid.Empty;
+
+    // Para guardar erros
+    string strError = "";
+    string notNull = "";
+
+    protected override void OnParametersSet()
+    {
+        if (IsEdit)
+        {
+            UserID = ModelUser.Id;
+
+            SelectedIds = UserUhs.Where(i => i.UserId == UserID).Select(i => i.UhID).ToList();
+            OwnedRoleId = UserRoles.Where(i => i.UserId == UserID).Select(i => i.RoleId).FirstOrDefault();
+        }
+        else
+        {
+            SelectedIds = new List<Guid>();
+            OwnedRoleId = new Guid("3b04aa8e-4307-4711-93a4-e2fb2f09f5a5");
+        }
+    }
+
+    private async void HandleValidSubmit()
+    {
+        try
+        {
+            if (IsEdit)
+            {
+                var user = await http.GetFromJsonAsync<RegisterUser>($"api/Auth/getuser/{ModelUser.Id}");
+
+                user.Name = ModelUser.Name;
+                user.UserName = ModelUser.UserName;
+                user.Email = ModelUser.Email;
+
+                if (ModelUser.Password != null)
+                {
+                    user.Password = ModelUser.Password;
+                }
+                if (ModelUser.PasswordConfirm != null)
+                {
+                    user.PasswordConfirm = ModelUser.PasswordConfirm;
+                }
+
+                var response = await http.PutAsJsonAsync("api/auth/update", user);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    await http.DeleteAsync($"api/auth/deleteuseruhs/{ModelUser.Id}");
+                    await http.DeleteAsync($"api/auth/deleteuserroles/{ModelUser.Id}");
+
+                    if (SelectedIds != null)
+                    {
+                        foreach (var ownedUh in SelectedIds)
+                        {
+                            RegisterUserUh registerUserUh = new RegisterUserUh()
+                            {
+                                UhID = ownedUh,
+                                UserId = user.Id
+                            };
+                            await http.PostAsJsonAsync("api/auth/registeruseruhs", registerUserUh);
+                        }
+                    }
+
+                    if (OwnedRoleId != null || OwnedRoleId != Guid.Empty)
+                    {
+                        RegisterUserRole registerUserRole = new RegisterUserRole()
+                        {
+                            RoleId = OwnedRoleId,
+                            UserId = user.Id
+                        };
+                        await http.PostAsJsonAsync("api/auth/registeruserroles", registerUserRole);
+                    }
+
+                }
+                else
+                {
+                    strError = "!ERRO! :" + response.StatusCode.ToString();
+                    // Keep the popup opened
+                    return;
+                }
+                toastService.ShowSuccess("Utilizador editado com sucesso", "Sucesso!");
+
+            }
+            else
+            {
+                if (ModelUser.Password == null)
+                {
+                    notNull = "Por favor insira uma password";
+                    // Keep the popup opened
+                    return;
+                }
+
+                // Insert new user
+                var NewUser = new RegisterUser
+                {
+                    Name = ModelUser.Name,
+                    UserName = ModelUser.UserName,
+                    Email = ModelUser.Email,
+                    Password = ModelUser.Password,
+                    PasswordConfirm = ModelUser.PasswordConfirm
+                };
+
+                var response = await http.PostAsJsonAsync("api/auth/register", NewUser);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var users = await http.GetFromJsonAsync<RegisterUser[]>("api/auth/get");
+                    UserID = users.Where(n => n.UserName == ModelUser.UserName).Select(i => i.Id).FirstOrDefault();
+                    if (SelectedIds != null)
+                    {
+                        foreach (var ownedUh in SelectedIds)
+                        {
+                            RegisterUserUh registerUserUh = new RegisterUserUh()
+                            {
+                                UhID = ownedUh,
+                                UserId = UserID
+                            };
+                            await http.PostAsJsonAsync("api/auth/registeruseruhs", registerUserUh);
+                        }
+                    }
+
+                    if (OwnedRoleId != null || OwnedRoleId != Guid.Empty)
+                    {
+                        RegisterUserRole registerUserRole = new RegisterUserRole()
+                        {
+                            RoleId = OwnedRoleId,
+                            UserId = UserID
+                        };
+                        await http.PostAsJsonAsync("api/auth/registeruserroles", registerUserRole);
+                    }
+
+                }
+                else
+                {
+                    strError = "!ERRO! :" + response.StatusCode.ToString();
+                    // Keep the popup opened
+                    return;
+                }
+                toastService.ShowSuccess("Utilizador adicionado com sucesso", "Sucesso!");
+            }
+
+            await CloseModal("userModal");
+            DataChanged?.Invoke();
+        }
+        catch (Exception ex)
+        {
+            strError = ex.GetBaseException().Message;
+        }
+    }
+
+    private async Task CloseModal(string modalId)
+    {
+        await Task.Delay(100);
+        await js.InvokeAsync<object>("global.closeModal", modalId);
+    }
+
+}

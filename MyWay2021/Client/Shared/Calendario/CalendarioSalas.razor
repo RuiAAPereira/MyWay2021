@@ -1,0 +1,59 @@
+﻿@*@inject HttpClient http
+
+@using System.Globalization
+@using Syncfusion.Blazor.Schedule
+
+<SfSchedule @ref="SheduleSalasRef" TValue="AppointmentData" Width="100%" Height="650px" @bind-SelectedDate="@CurrentDate"
+            Readonly="true" AllowDragAndDrop="false" >
+    <ScheduleGroup EnableCompactView="false" Resources="@GroupData"></ScheduleGroup>
+    <ScheduleResources>
+        <ScheduleResource TItem="Sala" TValue="Guid" DataSource="@salas" Field="SalaID" Title="Sala"
+                          Name="Salas" TextField="Nome" IdField="ID" ColorField="" AllowMultiple="true"></ScheduleResource>
+    </ScheduleResources>
+    <ScheduleEventSettings DataSource="@DataSource"></ScheduleEventSettings>
+    <ScheduleViews>
+        <ScheduleView Option="View.TimelineMonth" AllowVirtualScrolling="true"></ScheduleView>
+    </ScheduleViews>
+</SfSchedule>
+
+@code{
+    SfSchedule<AppointmentData> SheduleSalasRef;
+    private DateTime CurrentDate = DateTime.UtcNow;
+
+    public List<AppointmentData> DataSource { get; set; }
+    public List<Marcacao> marcacoes { get; set; }
+    public List<Curso> cursos { get; set; }
+    public List<Sala> salas { get; set; }
+
+    public string[] GroupData { get; set; } = { "Salas" };
+
+    protected override async Task OnInitializedAsync()
+    {
+        marcacoes = await http.GetFromJsonAsync<List<Marcacao>>("api/marcacao");
+        cursos = await http.GetFromJsonAsync<List<Curso>>("api/curso");
+        salas = await http.GetFromJsonAsync<List<Sala>>("api/sala");
+
+        DataSource = new List<AppointmentData>();
+        foreach (var m in marcacoes)
+        {
+            DataSource.Add(new AppointmentData
+            {
+                Id = m.ID,
+                Subject = m.Curso.Codigo,
+                StartTime = m.DataInicio,
+                EndTime = m.DataFim,
+                SalaID = m.SalaID
+            });
+        }
+    }
+
+    public class AppointmentData
+    {
+        public Guid Id { get; set; }
+        public string Subject { get; set; }
+        public DateTime StartTime { get; set; }
+        public DateTime EndTime { get; set; }
+        public Guid SalaID { get; set; }
+    }
+
+}*@

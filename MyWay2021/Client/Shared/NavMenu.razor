@@ -1,0 +1,94 @@
+﻿<div class="top-row pl-4 navbar navbar-dark">
+    <a class="navbar-brand" href="">Formação 2021</a>
+    <button class="navbar-toggler" @onclick="ToggleNavMenu">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+</div>
+
+<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
+    <ul class="nav flex-column">
+        <li class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                <i class="fas fa-home fa-2x fa-fw"></i>&nbsp; Início
+            </NavLink>
+        </li>
+        <AuthorizeView>
+            <Authorized>
+                @if (@context.User.IsInRole("Admin"))
+                {
+                    <li class="nav-item px-3">
+                        <NavLink class="nav-link" href="users">
+                            <i class="fas fa-users-cog fa-2x fa-fw"></i>&nbsp; Utilizadores
+                        </NavLink>
+                    </li>
+                    <li class="nav-item px-3">
+                        <NavLink class="nav-link" @onclick="()=>expandTabelas = !expandTabelas">
+                            <span class="oi oi-list-rich" aria-hidden="true"></span> Tabelas
+                        </NavLink>
+                    </li>
+                    @if (expandTabelas)
+                    {
+                        <li class="nav-item px-3">
+                            <NavLink class="nav-link" href="uhs">
+                                <i class="fas fa-map-marked-alt fa-2x fa-fw"></i>&nbsp; Unidades de Handling
+                            </NavLink>
+                        </li>
+                        <li class="nav-item px-3">
+                            <NavLink class="nav-link" href="departamentos">
+                                <i class="fas fa-vest fa-2x fa-fw"></i>&nbsp; Departamentos
+                            </NavLink>
+                        </li>
+                        <li class="nav-item px-3">
+                            <NavLink class="nav-link" href="grupos">
+                                <i class="fas fa-sitemap fa-2x fa-fw"></i>&nbsp; Grupos
+                            </NavLink>
+                        </li>
+                        <li class="nav-item px-3">
+                            <NavLink class="nav-link" href="empresas">
+                                <i class="fas fa-building fa-2x fa-fw"></i>&nbsp; Empresas
+                            </NavLink>
+                        </li>
+                        <li class="nav-item px-3">
+                            <NavLink class="nav-link" href="cursos">
+                                <i class="fas fa-book fa-2x fa-fw"></i>&nbsp; Cursos
+                            </NavLink>
+                        </li>
+                        <li class="nav-item px-3">
+                            <NavLink class="nav-link" href="salas">
+                                <i class="fas fa-chalkboard fa-2x fa-fw"></i>&nbsp; Salas
+                            </NavLink>
+                        </li>
+                    }
+
+                }
+                <li class="nav-item px-3">
+                    <NavLink class="nav-link" href="formandos">
+                        <i class="fas fa-user-graduate fa-2x fa-fw"></i>&nbsp; Formandos
+                    </NavLink>
+                </li>
+                <li class="nav-item px-3">
+                    <NavLink class="nav-link" href="marcacoes">
+                        <i class="far fa-calendar-plus fa-2x fa-fw"></i>&nbsp; Marcações
+                    </NavLink>
+                </li>
+            </Authorized>
+            <NotAuthorized>
+                <li class="nav-item px-3">
+                    <span>Não está logado.</span>
+                </li>
+            </NotAuthorized>
+        </AuthorizeView>
+    </ul>
+</div>
+
+@code {
+    private bool collapseNavMenu = true;
+    private bool expandTabelas = false;
+
+    private string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+}

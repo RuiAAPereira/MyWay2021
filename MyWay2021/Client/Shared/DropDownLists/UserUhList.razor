@@ -1,0 +1,54 @@
+﻿@inject HttpClient http
+
+@if (uhs != null)
+{
+    @if (UhID == null || UhID == Guid.Empty)
+    {
+        <span class="alert-danger">
+            <strong>Erro! :</strong>
+            Este utilizador não tem unidades de handling atribuidas!
+        </span>
+    }
+    else
+    {
+        <SfDropDownList TValue="Guid" TItem="Uh"
+                        Placeholder="Unidade de handling"
+                        @bind-Value="@UhID" DataSource="@uhs">
+            <DropDownListFieldSettings Text="Nome" Value="ID"></DropDownListFieldSettings>
+        </SfDropDownList>
+    }
+}
+
+@code {
+    [Parameter]
+    public Guid UhID
+    {
+        get => _uhID;
+        set
+        {
+            if (_uhID == value) return;
+
+            _uhID = value;
+            UhIDChanged.InvokeAsync(value);
+        }
+    }
+
+    [Parameter] public EventCallback<Guid> UhIDChanged { get; set; }
+    [Parameter] public string Placeholder { get; set; }
+
+    private Guid _uhID;
+    public List<Uh> uhs { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        uhs = await http.GetFromJsonAsync<List<Uh>>("api/auth/getowneduseruhs");
+
+        if (uhs != null)
+        {
+            if (UhID == null || UhID == Guid.Empty)
+            {
+                UhID = uhs.Select(i => i.ID).FirstOrDefault();
+            }
+        }
+    }
+}

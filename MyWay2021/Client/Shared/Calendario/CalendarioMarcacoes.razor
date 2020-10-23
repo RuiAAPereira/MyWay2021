@@ -1,0 +1,115 @@
+﻿@*@inject HttpClient http
+
+@using System.Globalization
+@using Syncfusion.Blazor.Schedule
+
+<SfSchedule @ref="SheduleRef" TValue="AppointmentData" Height="1100px" @bind-SelectedDate="@CurrentDate"
+            EnableAutoRowHeight="true" Readonly="true" AllowDragAndDrop="false" CurrentView="View.Month">
+    <ScheduleViews>
+        <ScheduleView Option="View.Week" StartHour="08:00" EndHour="19:00"></ScheduleView>
+        <ScheduleView Option="View.Month"></ScheduleView>
+    </ScheduleViews>
+    <ScheduleResources>
+        <ScheduleResource TItem="Curso" TValue="Guid" DataSource="@cursos"
+                          Field="CursoID" Title="Curso" Name="Cursos"
+                          TextField="Codigo" IdField="ID" ColorField="Cor">
+        </ScheduleResource>
+    </ScheduleResources>
+    <ScheduleEventSettings DataSource="@DataSource">
+    </ScheduleEventSettings>
+    <ScheduleQuickInfoTemplates TemplateType="TemplateType.Event">
+        <HeaderTemplate>
+            <div class="quick-info-header">
+                <div class="quick-info-header-content p-3"
+                     style="@("background:" + this.cursos.Where(item => item.ID
+                              .Equals((context as AppointmentData).CursoID))
+                              .FirstOrDefault().Cor + "; color: #FFFFFF;")">
+                    <div class="quick-info-title">
+                        Appointment Details
+                    </div>
+                    <div class="duration-text">@(GetEventDetails((context as AppointmentData)))</div>
+                </div>
+            </div>
+        </HeaderTemplate>
+        <ContentTemplate>
+            @{
+                AppointmentData Data = context as AppointmentData;
+                <div class="event-content">
+                    <div class="meeting-type-wrap">
+                        <label>Subject</label>:
+                        <span>@(Data.Subject)</span>
+                    </div>
+                    <div class="meeting-subject-wrap">
+                        <label>cenas.....</label>:
+                        <span>
+                            @((Data.CursoID != Guid.Empty || Data.CursoID != null) ? 
+                                cursos.Where(item => item.ID.Equals(Data.CursoID)).FirstOrDefault().Nome : "")
+                        </span>
+                    </div>
+                    <div class="notes-wrap">
+                        <label>Notes</label>:
+                        <span>@(Data.Description)</span>
+                    </div>
+                </div>
+            }
+        </ContentTemplate>
+        <FooterTemplate>
+            <div class="event-footer">
+                <SfButton IsPrimary="true" Content="More Details"></SfButton>
+                <SfButton Content="Fechar" IsPrimary="true" OnClick="@OnCloseQuickInfoPopup"></SfButton>
+            </div>
+        </FooterTemplate>
+    </ScheduleQuickInfoTemplates>
+</SfSchedule>
+
+@code {
+    SfSchedule<AppointmentData> SheduleRef;
+    private DateTime CurrentDate = DateTime.UtcNow;
+
+    public List<AppointmentData> DataSource { get; set; }
+    public List<Marcacao> marcacoes { get; set; }
+    public List<Curso> cursos { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        marcacoes = await http.GetFromJsonAsync<List<Marcacao>>("api/marcacao");
+        cursos = await http.GetFromJsonAsync<List<Curso>>("api/curso");
+
+        DataSource = new List<AppointmentData>();
+        foreach (var m in marcacoes)
+        {
+            DataSource.Add(new AppointmentData
+            {
+                Id = m.ID,
+                Subject = m.Curso.Codigo,
+                Description = m.Curso.Nome,
+                Location = m.Sala.Nome,
+                StartTime = m.DataInicio,
+                EndTime = m.DataFim,
+                CursoID = m.CursoID
+            });
+        }
+    }
+
+    private string GetEventDetails(AppointmentData data)
+    {
+        return data.StartTime.ToString("dddd dd, MMMM yyyy", CultureInfo.InvariantCulture) + " (" + data.StartTime.ToString("hh:mm tt", CultureInfo.InvariantCulture) + "-" + data.EndTime.ToString("hh:mm tt", CultureInfo.InvariantCulture) + ")";
+    }
+
+
+    private async Task OnCloseQuickInfoPopup(MouseEventArgs args)
+    {
+        await SheduleRef.CloseQuickInfoPopup();
+    }
+
+    public class AppointmentData
+    {
+        public Guid Id { get; set; }
+        public string Subject { get; set; }
+        public string Location { get; set; }
+        public string Description { get; set; }
+        public DateTime StartTime { get; set; }
+        public DateTime EndTime { get; set; }
+        public Guid CursoID { get; set; }
+    }
+}*@

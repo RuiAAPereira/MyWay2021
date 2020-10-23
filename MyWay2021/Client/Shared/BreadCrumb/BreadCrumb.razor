@@ -1,0 +1,28 @@
+﻿<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    @if (breadCrumbs != null)
+                    {
+                        @foreach (var bc in breadCrumbs)
+                        {
+                            @if (bc == breadCrumbs.Last())
+                            {
+                                <li class="breadcrumb-item active" aria-current="page">@bc.Text</li>
+                            }
+                            else
+                            {
+                                <li class="breadcrumb-item"><a href="@bc.Url">@bc.Text</a></li>
+                            }
+                        }
+                    }
+                </ol>
+            </nav>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter] public List<BreadCrumbData> breadCrumbs { get; set; }
+}
