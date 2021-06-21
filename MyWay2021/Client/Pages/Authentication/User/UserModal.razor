@@ -23,9 +23,9 @@
                         <DataAnnotationsValidator />
                         <input type="hidden" @bind-value="@ModelUser.Id" />
                         <div class="form-group row">
-                            <SfTextBox Placeholder="Nome" @bind-Value="@ModelUser.Name"
+                            <SfTextBox Placeholder="Nome" @bind-Value="@ModelUser.Nome"
                                        FloatLabelType="@FloatLabelType.Auto" Type="InputType.Text"></SfTextBox>
-                            <ValidationMessage For="@(() => ModelUser.Name)" />
+                            <ValidationMessage For="@(() => ModelUser.Nome)" />
                         </div>
                         <div class="form-group row">
                             <SfTextBox Placeholder="UserName" @bind-Value="@ModelUser.UserName"
@@ -96,7 +96,7 @@
     [Parameter] public RegisterUserRole[] UserRoles { get; set; }
     [Parameter] public RegisterUserUh[] UserUhs { get; set; }
 
-    [Parameter] public Action DataChanged { get; set; }
+    [Parameter] public System.Action DataChanged { get; set; }
     [Parameter] public RenderFragment CustomHeader { get; set; }
     [Parameter] public bool IsEdit { get; set; }
 
@@ -110,7 +110,6 @@
 
     // Para guardar erros
     string strError = "";
-    string notNull = "";
 
     protected override void OnParametersSet()
     {
@@ -136,7 +135,7 @@
             {
                 var user = await http.GetFromJsonAsync<RegisterUser>($"api/Auth/getuser/{ModelUser.Id}");
 
-                user.Name = ModelUser.Name;
+                user.Nome = ModelUser.Nome;
                 user.UserName = ModelUser.UserName;
                 user.Email = ModelUser.Email;
 
@@ -169,7 +168,7 @@
                         }
                     }
 
-                    if (OwnedRoleId != null || OwnedRoleId != Guid.Empty)
+                    if (OwnedRoleId != Guid.Empty)
                     {
                         RegisterUserRole registerUserRole = new RegisterUserRole()
                         {
@@ -193,7 +192,7 @@
             {
                 if (ModelUser.Password == null)
                 {
-                    notNull = "Por favor insira uma password";
+                    strError = "Por favor insira uma password";
                     // Keep the popup opened
                     return;
                 }
@@ -201,7 +200,7 @@
                 // Insert new user
                 var NewUser = new RegisterUser
                 {
-                    Name = ModelUser.Name,
+                    Nome = ModelUser.Nome,
                     UserName = ModelUser.UserName,
                     Email = ModelUser.Email,
                     Password = ModelUser.Password,
@@ -227,7 +226,7 @@
                         }
                     }
 
-                    if (OwnedRoleId != null || OwnedRoleId != Guid.Empty)
+                    if (OwnedRoleId != Guid.Empty)
                     {
                         RegisterUserRole registerUserRole = new RegisterUserRole()
                         {

@@ -603,21 +603,6 @@
   <data name="Slider_IncrementTitle" xml:space="preserve">
     <value>Increase</value>
   </data>
-  <data name="Maps_Zoom" xml:space="preserve">
-    <value>Zoom</value>
-  </data>
-  <data name="Maps_ZoomIn" xml:space="preserve">
-      <value>ZoomIn</value>
-  </data>
-  <data name="Maps_ZoomOut" xml:space="preserve">
-      <value>ZoomOut</value>
-  </data>
-  <data name="Maps_Reset" xml:space="preserve">
-      <value>Reset</value>
-  </data>
-  <data name="Maps_Pan" xml:space="preserve">
-      <value>Pan</value>
-  </data>
   <data name="Tab_CloseButtonTitle" xml:space="preserve">
     <value>Close</value>
   </data>
@@ -4853,9 +4838,6 @@
   </data>
   <data name="Grid_Group" xml:space="preserve">
     <value>Group by this column</value>
-  </data>
-  <data name="Grid_Ungroup" xml:space="preserve">
-    <value>Ungroup by this column</value>
   </data>
   <data name="Grid_AutoFitAll" xml:space="preserve">
     <value>Autofit all columns</value>

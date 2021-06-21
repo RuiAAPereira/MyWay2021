@@ -1,5 +1,3 @@
-using MyWay2021.Server.Data;
-using MyWay2021.Server.Models.Identity;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -7,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using MyWay2021.Server.Data;
+using MyWay2021.Server.Models.Identity;
 using System;
 using System.Threading.Tasks;
 
@@ -79,6 +79,11 @@ namespace MyWay2021.Server
             app.UseHttpsRedirection();
             app.UseBlazorFrameworkFiles();
             app.UseStaticFiles();
+            //app.UseStaticFiles(new StaticFileOptions()
+            //{
+            //    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), @"UploadedFiles")),
+            //    RequestPath = new PathString("/UploadedFiles")
+            //});
 
             app.UseRouting();
 

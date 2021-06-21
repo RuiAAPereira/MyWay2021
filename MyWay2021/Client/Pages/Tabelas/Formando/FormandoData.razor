@@ -1,0 +1,195 @@
+﻿@page "/formandos"
+
+@inject IToastService toastService
+@inject HttpClient client
+@inject IJSRuntime js
+
+@using Syncfusion.Blazor.Grids
+
+<AuthorizeView Context="authContext" Roles="@("Administrador")">
+    <Authorized>
+        <BreadCrumb breadCrumbs="breadCrumbs"></BreadCrumb>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12 col-md-8 col-lg-6 content-wrapper">
+                    <SfCard ID="Colaboradores">
+                        <CardHeader Title="Formandos" />
+                        <CardContent>
+                            <SpinLoader IsLoading="@(formandos == null)">
+                                <LoadingTemplate>
+                                    <div class="modal-overlay">
+                                        <Chase Color="#ff0000" Size="60px" Center="true" />
+                                    </div>
+                                </LoadingTemplate>
+                                <ContentTemplate>
+                                    @if (formandos.Count == 0)
+                                    {
+                                        <text>Não foram encontrados registos na base de dados</text>
+                                    }
+                                    else
+                                    {
+                                        <SfGrid TValue="Formando" DataSource="@formandos" AllowFiltering="true" AllowPaging="true">
+                                            <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false"></GridEditSettings>
+                                            <GridPageSettings PageCount="25"></GridPageSettings>
+                                            <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Menu"></GridFilterSettings>
+                                            <GridColumns>
+                                                <GridColumn HeaderText="Menu" Width="160" TextAlign="TextAlign.Center" AllowFiltering="false">
+                                                    <Template>
+                                                        @{
+                                                            var formando = (context as Formando);
+                                                        }
+                                                        <span class="d-inline-block" tabindex="0" data-toggle="tooltip" data-placement="top"
+                                                              title="Editar colaborador">
+                                                            <button type="button" class="btn btn-info"
+                                                                    data-toggle="modal" data-target="#formandoModal"
+                                                                    @onclick="@(() => PrepareForEdit(formando))">
+                                                                <i class="fas fa-edit"></i>
+                                                            </button>
+                                                        </span>
+                                                        <span class="d-inline-block" tabindex="0" data-toggle="tooltip" data-placement="top"
+                                                              title="Apagar colaborador">
+                                                            <button type="button" class="btn btn-danger"
+                                                                    data-toggle="modal" data-target="#confirmDeleteModal"
+                                                                    @onclick="@(() => PrepareForDelete(formando.ID))">
+                                                                <i class="fas fa-trash-alt"></i>
+                                                            </button>
+                                                        </span>
+                                                    </Template>
+                                                </GridColumn>
+                                                <GridColumn Field=@nameof(Formando.ID) TextAlign="TextAlign.Right"
+                                                            Visible="false" IsPrimaryKey="true"></GridColumn>
+                                                <GridColumn Field=@nameof(Formando.Numero) HeaderText="Número"></GridColumn>
+                                                <GridColumn Field=@nameof(Formando.Nome) HeaderText=" Nome"></GridColumn>
+                                                <GridForeignColumn Field=@nameof(Formando.UhID) HeaderText="UH"
+                                                                   ForeignKeyValue="IATA" ForeignKeyField="ID"
+                                                                   ForeignDataSource="@uhs">
+                                                </GridForeignColumn>
+                                                <GridForeignColumn Field=@nameof(Formando.FuncaoID) HeaderText="Função"
+                                                                   ForeignKeyValue="Nome" ForeignKeyField="ID"
+                                                                   ForeignDataSource="@funcoes">
+                                                </GridForeignColumn>
+                                            </GridColumns>
+                                        </SfGrid>
+                                    }
+                                </ContentTemplate>
+                                <FaultedContentTemplate>
+                                    <text>ERRO! Por favor contacte o administrador do sistema!</text>
+                                </FaultedContentTemplate>
+                            </SpinLoader>
+                        </CardContent>
+                        <CardFooter>
+                            <CardFooterContent>
+                                <span class="d-inline-block" tabindex="0" data-toggle="tooltip" data-placement="top"
+                                      title="Criar novo formando">
+                                    <button type="button" class="btn btn-success"
+                                            data-toggle="modal" data-target="#formandoModal"
+                                            @onclick="@(() => PrepareToAdd())">
+                                        <i class="fas fa-plus"></i>&nbsp;Criar
+                                    </button>
+                                </span>
+                            </CardFooterContent>
+                        </CardFooter>
+                    </SfCard>
+                </div>
+            </div>
+        </div>
+
+        <ConfirmDialog OnClick="@Delete">
+            <ConfirmText>
+                <p>Deseja de apagar @ItemToDelete ?</p>
+                <p>Não será possível recuperar este registo!</p>
+            </ConfirmText>
+        </ConfirmDialog>
+        <FormandoModal Model=Model Uhs="uhs" Funcoes="funcoes"
+                          DataChanged="@DataChanged">
+            <CustomHeader>@CustomHeader</CustomHeader>
+        </FormandoModal>
+
+    </Authorized>
+    <NotAuthorized>
+        <p>Não está logado.</p>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    public List<BreadCrumbData> breadCrumbs = new List<BreadCrumbData>();
+
+    List<Formando> formandos { get; set; }
+    List<Uh> uhs { get; set; }
+    List<Funcao> funcoes { get; set; }
+    Formando Model = new Formando();
+    Guid FormandoToDelete { get; set; }
+    string ItemToDelete = string.Empty;
+    string CustomHeader = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        BreadCrumbData breadCrumb = new BreadCrumbData
+        {
+            Text = "Início",
+            Url = "/"
+        };
+        breadCrumbs.Add(breadCrumb);
+
+        breadCrumb = new BreadCrumbData
+        {
+            Text = "Tabelas",
+            Url = "/formandos"
+        };
+        breadCrumbs.Add(breadCrumb);
+
+        breadCrumb = new BreadCrumbData
+        {
+            Text = "Colaboradores",
+            Url = "/colaboradores"
+        };
+        breadCrumbs.Add(breadCrumb);
+
+        formandos = await client.GetFromJsonAsync<List<Formando>>("api/formando");
+        uhs = await client.GetFromJsonAsync<List<Uh>>("api/uh");
+        funcoes = await client.GetFromJsonAsync<List<Funcao>>("api/funcao");
+    }
+
+    private async void DataChanged()
+    {
+        breadCrumbs.Clear();
+        await OnInitializedAsync();
+        StateHasChanged();
+    }
+
+    private void PrepareToAdd()
+    {
+        Model = new Formando();
+        CustomHeader = "Adicionar formando";
+    }
+
+    private void PrepareForEdit(Formando formando)
+    {
+        Model = formando;
+        CustomHeader = "Editar formando";
+    }
+
+    private void PrepareForDelete(Guid formandoID)
+    {
+        FormandoToDelete = formandoID;
+        var formando = formandos.First(x => x.ID == FormandoToDelete);
+        ItemToDelete = formando.Nome;
+    }
+
+    async Task Delete()
+    {
+        await js.InvokeAsync<object>("global.closeModal", "confirmDeleteModal");
+
+        var response = await client.DeleteAsync($"api/formando/{FormandoToDelete}");
+        if (response.IsSuccessStatusCode)
+        {
+            FormandoToDelete = Guid.Empty;
+            ItemToDelete = null;
+            await Task.Delay(100);
+            toastService.ShowSuccess("Formando apagado com sucesso", "Sucesso!");
+        }
+
+        breadCrumbs.Clear();
+        await OnInitializedAsync();
+    }
+}

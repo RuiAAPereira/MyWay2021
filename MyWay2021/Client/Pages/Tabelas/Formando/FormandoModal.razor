@@ -1,0 +1,205 @@
+﻿@inject IToastService toastService
+@inject HttpClient http
+@inject IJSRuntime js
+
+<div class="modal fade" id="formandoModal" tabindex="-1"
+     role="dialog" aria-labelledby="formandoModal"
+     aria-hidden="true" backdrop="static">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="CustomHeader">@CustomHeader</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <EditForm Model="@Model" OnValidSubmit="@HandleValidSubmit">
+                <div class="modal-body">
+                    <div class="mx-3">
+                        <DataAnnotationsValidator />
+                        <input type="hidden" @bind-value="@Model.ID" />
+                        <div class="form-row">
+                            <div class="form-group col-md-4">
+                                <SfNumericTextBox Placeholder="Número" @bind-Value="@Model.Numero" CssClass="@ValidateNumero"
+                                                  FloatLabelType="@FloatLabelType.Auto">
+                                    <NumericTextBoxEvents TValue="int" ValueChange="ChangeNumero"></NumericTextBoxEvents>
+                                </SfNumericTextBox>
+                                <ValidationMessage For="@(() => Model.Numero)" />
+                                @if (erros.ContainsKey("erroNumero"))
+                                {
+                                    <small class="field-validation-error text-danger"><strong>@erros["erroNumero"]</strong></small>
+                                }
+                                else
+                                {
+                                    <small id="numeroHelp" class="form-text text-muted">
+                                        Número de funcionário.
+                                    </small>
+                                }
+                            </div>
+                            <div class="form-group col-md-8">
+                            </div>
+                        </div>
+                        <div class="form-row pb-3">
+                            <SfTextBox Placeholder="Nome" @bind-Value="@Model.Nome"
+                                       FloatLabelType="@FloatLabelType.Auto" Type="InputType.Text"></SfTextBox>
+                            <ValidationMessage For="@(() => Model.Nome)" />
+                            <small id="nomeHelp" class="form-text text-muted">
+                                Nome do colaborador.
+                            </small>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <SfDropDownList TValue="Guid" TItem="Funcao" CssClass="@ValidateFuncao"
+                                                Placeholder="Função" @bind-Value="@Model.FuncaoID" DataSource="@Funcoes">
+                                    <DropDownListEvents TItem="Funcao" TValue="Guid" ValueChange="FuncaoChanged"></DropDownListEvents>
+
+                                    <DropDownListFieldSettings Text="Nome" Value="ID"></DropDownListFieldSettings>
+                                </SfDropDownList>
+                                <ValidationMessage For="@(() => Model.FuncaoID)" />
+                                @if (erros.ContainsKey("erroFuncao"))
+                                {
+                                    <small class="field-validation-error text-danger"><strong>@erros["erroFuncao"]</strong></small>
+                                }
+                                else
+                                {
+                                    <small id="funcaoHelp" class="form-text text-muted">
+                                        Selecionar uma função.
+                                    </small>
+                                }
+                            </div>
+                            <div class="form-group col-md-6">
+                                <UserUhList @bind-UhID="@Model.UhID" CssClass="@ValidateUh" />
+                                <ValidationMessage For="@(() => Model.UhID)" />
+                                @if (erros.ContainsKey("erroSala"))
+                                {
+                                    <small class="field-validation-error text-danger"><strong>@erros["erroUh"]</strong></small>
+                                }
+                                else
+                                {
+                                    <small id="uhHelp" class="form-text text-muted">
+                                        Selecionar uma unidade de handling.
+                                    </small>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success"
+                            data-toggle="tooltip" data-placement="top"
+                            title="Submeter formulário">
+                        <i class="fas fa-save"></i>&nbsp;Gravar
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-undo"></i>&nbsp;Cancelar
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code{
+    [Parameter] public System.Action DataChanged { get; set; }
+    [Parameter] public RenderFragment CustomHeader { get; set; }
+    [Parameter] public Formando Model { get; set; }
+    [Parameter] public List<Funcao> Funcoes { get; set; }
+    [Parameter] public List<Uh> Uhs { get; set; }
+
+    string ValidateFuncao = "e-success";
+    string ValidateUh = "e-success";
+    string ValidateNumero = "e-success";
+    Dictionary<string, string> erros = new Dictionary<string, string>();
+
+    protected override void OnParametersSet()
+    {
+        if (Model.FuncaoID == Guid.Empty)
+        {
+            ValidateFuncao = "e-error";
+        }
+        else
+        {
+            ValidateFuncao = "e-success";
+        }
+        if (Model.Numero <= 0)
+        {
+            ValidateNumero = "e-error";
+        }
+        else
+        {
+            ValidateNumero = "e-success";
+        }
+    }
+
+    private async void HandleValidSubmit()
+    {
+        var isValid = CustomValidation(Model.FuncaoID, Model.UhID, Model.Numero);
+        if (isValid)
+        {
+            erros.Clear();
+
+            if (Model.ID == Guid.Empty)
+            {
+                await http.PostAsJsonAsync("api/formando", Model);
+                toastService.ShowSuccess("Colaborador adicionado com sucesso", "Sucesso!");
+            }
+            else
+            {
+                await http.PutAsJsonAsync("api/formando", Model);
+                toastService.ShowSuccess("Colaborador editado com sucesso", "Sucesso!");
+            }
+        }
+        else
+        {
+            return;
+        }
+
+        await CloseModal("formandoModal");
+        DataChanged?.Invoke();
+    }
+
+    private bool CustomValidation(Guid funcaoID, Guid uhID, int numero)
+    {
+        if (funcaoID == Guid.Empty)
+        {
+            erros.Add("erroFuncao", "Por favor selecione uma função");
+            return false;
+        }
+        if (uhID == Guid.Empty)
+        {
+            erros.Add("erroUh", "Por favor selecione uma UH");
+            return false;
+        }
+        if (numero <= 0)
+        {
+            ValidateNumero = "e-error";
+            erros.Add("erroNumero", "Por favor indique o número do colaborador");
+            return false;
+        }
+        return true;
+    }
+
+    void FuncaoChanged(Syncfusion.Blazor.DropDowns.ChangeEventArgs<Guid, Funcao> args)
+    {
+        if (args.Value != Guid.Empty)
+        {
+            ValidateFuncao = "e-success";
+            erros.Remove("erroFuncao");
+            Model.FuncaoID = args.Value;
+        }
+    }
+    void ChangeNumero(Syncfusion.Blazor.Inputs.ChangeEventArgs<int> args)
+    {
+        if (args.Value > 0)
+        {
+            ValidateNumero = "e-success";
+            erros.Remove("erroFuncao");
+            Model.Numero = args.Value;
+        }
+    }
+
+    private async Task CloseModal(string modalId)
+    {
+        await js.InvokeAsync<object>("global.closeModal", modalId);
+    }
+}

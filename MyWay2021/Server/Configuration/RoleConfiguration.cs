@@ -1,28 +1,38 @@
-﻿using MyWay2021.Server.Models.Identity;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
+using MyWay2021.Server.Models.Identity;
 
 namespace MyWay2021.Server.Configuration
 {
     public class RoleConfiguration : IEntityTypeConfiguration<AppRole>
     {
+        private const string adminId = "2301D884-221A-4E7D-B509-0113DCC043E1";
+        private const string utilizadorId = "7D9B7113-A8F8-4035-99A7-A20DD400F6A3";
+        private const string consultorId = "78A7570F-3CE5-48BA-9461-80283ED1D94D";
+
         public void Configure(EntityTypeBuilder<AppRole> builder)
         {
+
             builder.HasData(
-                new AppRole
-                {
-                    Id = new Guid("3b04aa8e-4307-4711-93a4-e2fb2f09f5a5").ToString(),
-                    Name = "User",
-                    NormalizedName = "USER"
-                },
-                new AppRole
-                {
-                    Id = new Guid("e7526d31-3669-4f80-8e85-046e272634b6").ToString(),
-                    Name = "Admin",
-                    NormalizedName = "ADMIN"
-                }
-            );
+                   new AppRole
+                   {
+                       Id = adminId,
+                       Name = "Administrador",
+                       NormalizedName = "ADMINISTRADOR"
+                   },
+                   new AppRole
+                   {
+                       Id = utilizadorId,
+                       Name = "Utilizador",
+                       NormalizedName = "UTILIZADOR"
+                   },
+                   new AppRole
+                   {
+                       Id = consultorId,
+                       Name = "Consultor",
+                       NormalizedName = "CONSULTOR"
+                   }
+               );
         }
     }
 }

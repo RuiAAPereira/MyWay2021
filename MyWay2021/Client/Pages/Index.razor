@@ -1,14 +1,645 @@
 ﻿@page "/"
 
-@using MyWay2021.Client.Shared.Calendario
+@using MyWay2021.Shared.Models.Analise
 
-<AuthorizeView>
+@inject IToastService toastService
+@inject HttpClient client
+@inject IJSRuntime js
+
+<AuthorizeView Context="authContext" Roles="@("Administrador")">
     <Authorized>
-        <h1>Olá @context.User.Identity.Name !!</h1>
-        <p>Bem-Vindo.</p>
+        <div class="container-fluid">
+            <div class="row">
+                <BreadCrumb breadCrumbs="breadCrumbs"></BreadCrumb>
+            </div>
+            <div class="row">
+                <SfSpinner @ref="SpinnerObj" Target="#container"></SfSpinner>
 
+                <div id="container">
+                    <div class="row">
+                        <div class="col-12 col-md-12 col-lg-12">
+                            @if (listaAeroportos != null)
+                            {
+                                <SfTab @ref="TabObj">
+                                    <TabEvents Selected="OnTabSelected"></TabEvents>
+                                    <TabItems>
+                                        @foreach (var _aeroporto in listaAeroportos)
+                                        {
+                                            <TabItem>
+                                                <ChildContent>
+                                                    <TabHeader Text="@_aeroporto.Aeroporto"></TabHeader>
+                                                </ChildContent>
+                                                <ContentTemplate>
+                                                    <div class="py-4">
+                                                        <SfTab CssClass="default-tab" ID="@("TabHoje"+_aeroporto.Aeroporto)">
+                                                            <TabItems>
+                                                                <TabItem>
+                                                                    <ChildContent>
+                                                                        <TabHeader Text="Hoje"></TabHeader>
+                                                                    </ChildContent>
+                                                                    <ContentTemplate>
+                                                                        @if (listaAssistenciasHoje != null)
+                                                                        {
+                                                                            var listaAssistenciasHojeAeroporto = listaAssistenciasHoje.Where(a => a.Aeroporto == _aeroporto.Aeroporto).ToList();
+                                                                            if (listaAssistenciasHojeAeroporto.Count > 0)
+                                                                            {
+                                                                                <SfCard ID="@("CardHoje"+_aeroporto.Aeroporto)">
+                                                                                    <CardHeader Title="Voos críticos hoje" />
+                                                                                    <CardContent>
+                                                                                        <div class="row">
+                                                                                            <div class="col-md-8 py-2">
+                                                                                                @if (voosCriticosHoje != null)
+                                                                                                {
+                                                                                                    var voosCriticosHojeAeroporto = voosCriticosHoje.Where(a => a.Aeroporto == _aeroporto.Aeroporto).ToList();
+
+                                                                                                    <SfGrid TValue="VoosCriticos" DataSource="@voosCriticosHojeAeroporto" AllowSorting="true" ID="@("GridHoje" + _aeroporto.Aeroporto)">
+                                                                                                        <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false"></GridEditSettings>
+                                                                                                        <GridPageSettings PageCount="15"></GridPageSettings>
+                                                                                                        <GridSortSettings>
+                                                                                                            <GridSortColumns>
+                                                                                                                <GridSortColumn Field="Horario" Direction="SortDirection.Ascending"></GridSortColumn>
+                                                                                                            </GridSortColumns>
+                                                                                                        </GridSortSettings>
+                                                                                                        <GridColumns>
+                                                                                                            <GridColumn Field=@nameof(VoosCriticos.Aeroporto) HeaderText="UH"></GridColumn>
+                                                                                                            <GridColumn Field=@nameof(VoosCriticos.Num) HeaderText="Voo"></GridColumn>
+                                                                                                            <GridColumn Field=@nameof(VoosCriticos.Conta) HeaderText="Num PMR"></GridColumn>
+                                                                                                            <GridColumn Field=@nameof(VoosCriticos.Horario) Format="dd/MM/yyyy HH:mm" HeaderText="Horário"></GridColumn>
+                                                                                                            <GridColumn Field=@nameof(VoosCriticos.Mov) HeaderText="Movimento"></GridColumn>
+                                                                                                            <GridColumn Field=@nameof(VoosCriticos.Od) HeaderText="Origem / Destino"></GridColumn>
+                                                                                                        </GridColumns>
+                                                                                                    </SfGrid>
+
+                                                                                                }
+                                                                                            </div>
+                                                                                            <div class="col-md-4 py-2">
+
+                                                                                                @{
+                                                                                                    int AssistenciasHoje = listaAssistenciasHojeAeroporto.Count();
+                                                                                                    int AssistenciasHojeManha = listaAssistenciasHojeAeroporto.Where(d => d.Data.Hour <= 15).Count();
+                                                                                                    int AssistenciasHojeTarde = listaAssistenciasHojeAeroporto.Where(d => d.Data.Hour >= 16).Count();
+                                                                                                    int AssistenciasHojeCS = listaAssistenciasHojeAeroporto.Where(d => d.SSR.Contains("WCHC") || d.SSR.Contains("WCHS")).Count();
+                                                                                                    int AssistenciasHojeOutras = listaAssistenciasHojeAeroporto.Where(d => !d.SSR.Contains("WCHC") && !d.SSR.Contains("WCHS")).Count();
+                                                                                                }
+                                                                                                <div class="info-box bg-green">
+                                                                                                    <span class="info-box-icon"><i class="fas fa-blind"></i></span>
+                                                                                                    <div class="info-box-content">
+                                                                                                        <span class="info-box-text">Total de PMR’s</span>
+                                                                                                        <span class="info-box-number">@AssistenciasHoje</span>
+                                                                                                        <div class="progress">
+                                                                                                            <div class="progress-bar" style="width: @((int)Math.Round((double)(100 * AssistenciasHoje) / 903))%"></div>
+                                                                                                        </div>
+                                                                                                        <span class="progress-description">
+                                                                                                            @((int)Math.Round((double)(100 * AssistenciasHoje) / 903))% Do máximo de assistências registado (903)
+                                                                                                        </span>
+                                                                                                    </div>
+                                                                                                </div>
+
+                                                                                                <div class="info-box bg-blue">
+                                                                                                    <span class="info-box-icon"><i class="far fa-clock"></i></span>
+                                                                                                    <div class="info-box-content">
+                                                                                                        <span class="info-box-text">PMRs Manhã (05H às 15H)</span>
+                                                                                                        <span class="info-box-number">@AssistenciasHojeManha</span>
+                                                                                                        <div class="progress">
+                                                                                                            <div class="progress-bar" style="width: @((int)Math.Round((double)(100 * AssistenciasHojeManha) / AssistenciasHoje))%"></div>
+                                                                                                        </div>
+                                                                                                        <span class="progress-description">
+                                                                                                            @((int)Math.Round((double)(100 * AssistenciasHojeManha) / AssistenciasHoje))% Do total de assistências hoje (@AssistenciasHoje)
+                                                                                                        </span>
+                                                                                                    </div>
+                                                                                                </div>
+
+                                                                                                <div class="info-box bg-orange">
+                                                                                                    <span class="info-box-icon"><i class="far fa-clock"></i></span>
+                                                                                                    <div class="info-box-content">
+                                                                                                        <span class="info-box-text">PMRs Tarde (15H às 00H):</span>
+                                                                                                        <span class="info-box-number">@AssistenciasHojeTarde</span>
+                                                                                                        <div class="progress">
+                                                                                                            <div class="progress-bar" style="width: @((int)Math.Round((double)(100 * AssistenciasHojeTarde) / AssistenciasHoje))%"></div>
+                                                                                                        </div>
+                                                                                                        <span class="progress-description">
+                                                                                                            @((int)Math.Round((double)(100 * AssistenciasHojeTarde) / AssistenciasHoje))% Do total de assistências hoje (@AssistenciasHoje)
+                                                                                                        </span>
+                                                                                                    </div>
+                                                                                                </div>
+
+                                                                                                <div class="info-box bg-maroon">
+                                                                                                    <span class="info-box-icon"><i class="fa fa-wheelchair"></i></span>
+                                                                                                    <div class="info-box-content">
+                                                                                                        <span class="info-box-text">Quantidade WCHC + WCHS:</span>
+                                                                                                        <span class="info-box-number">@AssistenciasHojeCS</span>
+                                                                                                        <div class="progress">
+                                                                                                            <div class="progress-bar" style="width: @((int)Math.Round((double)(100 * AssistenciasHojeCS) / AssistenciasHoje))%"></div>
+                                                                                                        </div>
+                                                                                                        <span class="progress-description">
+                                                                                                            @((int)Math.Round((double)(100 * AssistenciasHojeCS) / AssistenciasHoje))% Do total de assistências hoje (@AssistenciasHoje)
+                                                                                                        </span>
+                                                                                                    </div>
+                                                                                                </div>
+
+                                                                                                <div class="info-box bg-light-blue">
+                                                                                                    <span class="info-box-icon"><i class="fab fa-accessible-icon"></i></span>
+                                                                                                    <div class="info-box-content">
+                                                                                                        <span class="info-box-text">Restantes assistências:</span>
+                                                                                                        <span class="info-box-number">@AssistenciasHojeOutras</span>
+                                                                                                        <div class="progress">
+                                                                                                            <div class="progress-bar" style="width: @((int)Math.Round((double)(100 * AssistenciasHojeOutras) / AssistenciasHoje))%"></div>
+                                                                                                        </div>
+                                                                                                        <span class="progress-description">
+                                                                                                            @((int)Math.Round((double)(100 * AssistenciasHojeOutras) / AssistenciasHoje))% Do total de assistências hoje (@AssistenciasHoje)
+                                                                                                        </span>
+                                                                                                    </div>
+                                                                                                </div>
+
+                                                                                            </div>
+                                                                                        </div>
+                                                                                        <div class="row">
+                                                                                            @if (ChartDataHoje != null)
+                                                                                            {
+                                                                                                var ChartDataHojeAeroporto = ChartDataHoje.Where(a => a.Aeroporto == _aeroporto.Aeroporto).ToList();
+
+                                                                                                if (ChartDataHojeAeroporto.Count > 0)
+                                                                                                {
+
+                                                                                                    <div class="col-md-12">
+                                                                                                        <SfChart Title="Total de PMR por BRD/STA:" Theme="Theme.Bootstrap4" ID="@("ChartHoje"+_aeroporto.Aeroporto)">
+                                                                                                            <ChartArea><ChartAreaBorder Width="0"></ChartAreaBorder></ChartArea>
+                                                                                                            <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.Category" Interval="1">
+                                                                                                                <ChartAxisMajorGridLines Width="0"></ChartAxisMajorGridLines>
+                                                                                                            </ChartPrimaryXAxis>
+                                                                                                            <ChartPrimaryYAxis>
+                                                                                                                <ChartAxisLineStyle Width="0"></ChartAxisLineStyle>
+                                                                                                                <ChartAxisLabelStyle Color="transparent"></ChartAxisLabelStyle>
+                                                                                                                <ChartAxisMajorGridLines Width="0"></ChartAxisMajorGridLines>
+                                                                                                                <ChartAxisMajorTickLines Width="0"></ChartAxisMajorTickLines>
+                                                                                                            </ChartPrimaryYAxis>
+                                                                                                            <ChartSeriesCollection>
+                                                                                                                <ChartSeries DataSource="@ChartDataHojeAeroporto" XName="Movimento" YName="Chegadas" Name="Chegadas"
+                                                                                                                             Fill="#32a850" Type="ChartSeriesType.Column">
+                                                                                                                    <ChartMarker>
+                                                                                                                        <ChartDataLabel Visible="true" Position="Syncfusion.Blazor.Charts.LabelPosition.Top">
+                                                                                                                            <ChartDataLabelFont FontWeight="600" Color="#ffffff"></ChartDataLabelFont>
+                                                                                                                        </ChartDataLabel>
+                                                                                                                    </ChartMarker>
+                                                                                                                </ChartSeries>
+                                                                                                                <ChartSeries DataSource="@ChartDataHojeAeroporto" XName="Movimento" YName="Partidas" Name="Partidas"
+                                                                                                                             Fill="#3263a8" Type="ChartSeriesType.Column">
+                                                                                                                    <ChartMarker>
+                                                                                                                        <ChartDataLabel Visible="true" Position="Syncfusion.Blazor.Charts.LabelPosition.Top">
+                                                                                                                            <ChartDataLabelFont FontWeight="600" Color="#ffffff"></ChartDataLabelFont>
+                                                                                                                        </ChartDataLabel>
+                                                                                                                    </ChartMarker>
+                                                                                                                </ChartSeries>
+                                                                                                                <ChartSeries DataSource="@ChartDataHojeAeroporto" Name="Total" XName="Movimento" Width="2"
+                                                                                                                             Opacity="1" YName="Total" Fill="#a83232" Type="ChartSeriesType.Spline">
+                                                                                                                    <ChartMarker Visible="true" Width="10" Height="10">
+                                                                                                                    </ChartMarker>
+                                                                                                                </ChartSeries>
+                                                                                                            </ChartSeriesCollection>
+                                                                                                            <ChartTooltipSettings Enable="true"></ChartTooltipSettings>
+                                                                                                        </SfChart>
+                                                                                                    </div>
+                                                                                                }
+                                                                                            }
+                                                                                        </div>
+                                                                                    </CardContent>
+                                                                                    <CardFooter>
+                                                                                        <CardFooterContent>
+                                                                                        </CardFooterContent>
+                                                                                    </CardFooter>
+                                                                                </SfCard>
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <h3>
+                                                                                    Não existem dados para este dia, por favor faça upload dos dados <NavLink href="/Customers/Customer/A123">aqui</NavLink>!
+                                                                                </h3>
+                                                                            }
+                                                                        }
+                                                                    </ContentTemplate>
+                                                                </TabItem>
+                                                                <TabItem>
+                                                                    <ChildContent>
+                                                                        <TabHeader Text="Amanhã"></TabHeader>
+                                                                    </ChildContent>
+                                                                    <ContentTemplate>
+                                                                        @if (listaAssistenciasAmanha != null)
+                                                                        {
+                                                                            var listaAssistenciasAmanhaAeroporto = listaAssistenciasAmanha.Where(a => a.Aeroporto == _aeroporto.Aeroporto).ToList();
+                                                                            if (listaAssistenciasAmanhaAeroporto.Count > 0)
+                                                                            {
+                                                                                <SfCard ID="@("CardAmanha"+_aeroporto.Aeroporto)">
+                                                                                    <CardHeader Title="Voos críticos para amanhã" />
+                                                                                    <CardContent>
+                                                                                        <div class="row">
+                                                                                            <div class="col-md-8 py-2">
+                                                                                                @if (voosCriticosAmanha != null)
+                                                                                                {
+                                                                                                    var voosCriticosAmanhaAeroporto = voosCriticosAmanha.Where(a => a.Aeroporto == _aeroporto.Aeroporto).ToList();
+                                                                                                    <SfGrid TValue="VoosCriticos" DataSource="@voosCriticosAmanhaAeroporto" AllowSorting="true" ID="@("GridAmanha" + _aeroporto.Aeroporto)">
+                                                                                                        <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false"></GridEditSettings>
+                                                                                                        <GridPageSettings PageCount="15"></GridPageSettings>
+                                                                                                        <GridSortSettings>
+                                                                                                            <GridSortColumns>
+                                                                                                                <GridSortColumn Field="Horario" Direction="SortDirection.Ascending"></GridSortColumn>
+                                                                                                            </GridSortColumns>
+                                                                                                        </GridSortSettings>
+                                                                                                        <GridColumns>
+                                                                                                            <GridColumn Field=@nameof(VoosCriticos.Aeroporto) HeaderText="UH"></GridColumn>
+                                                                                                            <GridColumn Field=@nameof(VoosCriticos.Num) HeaderText="Voo"></GridColumn>
+                                                                                                            <GridColumn Field=@nameof(VoosCriticos.Conta) HeaderText="Num PMR"></GridColumn>
+                                                                                                            <GridColumn Field=@nameof(VoosCriticos.Horario) Format="dd/MM/yyyy HH:mm" HeaderText="Horário"></GridColumn>
+                                                                                                            <GridColumn Field=@nameof(VoosCriticos.Mov) HeaderText="Movimento"></GridColumn>
+                                                                                                            <GridColumn Field=@nameof(VoosCriticos.Od) HeaderText="Origem / Destino"></GridColumn>
+                                                                                                        </GridColumns>
+                                                                                                    </SfGrid>
+                                                                                                }
+                                                                                                else
+                                                                                                {
+                                                                                                    <p>Não existem voos críticos para Amanhã!</p>
+                                                                                                }
+                                                                                            </div>
+                                                                                            <div class="col-md-4">
+                                                                                                @{
+                                                                                                    int AssistenciasAmanha = listaAssistenciasAmanhaAeroporto.Count();
+                                                                                                    int AssistenciasAmanhaManha = listaAssistenciasAmanhaAeroporto.Where(d => d.Data.Hour <= 15).Count();
+                                                                                                    int AssistenciasAmanhaTarde = listaAssistenciasAmanhaAeroporto.Where(d => d.Data.Hour >= 16).Count();
+                                                                                                    int AssistenciasAmanhaCS = listaAssistenciasAmanhaAeroporto.Where(d => d.SSR.Contains("WCHC") || d.SSR.Contains("WCHS")).Count();
+                                                                                                    int AssistenciasAmanhaOutras = listaAssistenciasAmanhaAeroporto.Where(d => !d.SSR.Contains("WCHC") && !d.SSR.Contains("WCHS")).Count();
+                                                                                                }
+                                                                                                <div class="info-box bg-green">
+                                                                                                    <span class="info-box-icon"><i class="fas fa-blind"></i></span>
+                                                                                                    <div class="info-box-content">
+                                                                                                        <span class="info-box-text">Total de PMR’s</span>
+                                                                                                        <span class="info-box-number">@AssistenciasAmanha</span>
+                                                                                                        <div class="progress">
+                                                                                                            <div class="progress-bar" style="width: @((int)Math.Round((double)(100 * AssistenciasAmanha) / 903))%"></div>
+                                                                                                        </div>
+                                                                                                        <span class="progress-description">
+                                                                                                            @((int)Math.Round((double)(100 * AssistenciasAmanha) / 903))% Do máximo de assistências registado (903)
+                                                                                                        </span>
+                                                                                                    </div>
+                                                                                                </div>
+
+                                                                                                <div class="info-box bg-blue">
+                                                                                                    <span class="info-box-icon"><i class="far fa-clock"></i></span>
+                                                                                                    <div class="info-box-content">
+                                                                                                        <span class="info-box-text">PMRs Manhã (05H às 15H)</span>
+                                                                                                        <span class="info-box-number">@AssistenciasAmanhaManha</span>
+                                                                                                        <div class="progress">
+                                                                                                            <div class="progress-bar" style="width: @((int)Math.Round((double)(100 * AssistenciasAmanhaManha) / AssistenciasAmanha))%"></div>
+                                                                                                        </div>
+                                                                                                        <span class="progress-description">
+                                                                                                            @((int)Math.Round((double)(100 * AssistenciasAmanhaManha) / AssistenciasAmanha))% Do total de assistências hoje (@AssistenciasAmanha)
+                                                                                                        </span>
+                                                                                                    </div>
+                                                                                                </div>
+
+                                                                                                <div class="info-box bg-orange">
+                                                                                                    <span class="info-box-icon"><i class="far fa-clock"></i></span>
+                                                                                                    <div class="info-box-content">
+                                                                                                        <span class="info-box-text">PMRs Tarde (15H às 00H):</span>
+                                                                                                        <span class="info-box-number">@AssistenciasAmanhaTarde</span>
+                                                                                                        <div class="progress">
+                                                                                                            <div class="progress-bar" style="width: @((int)Math.Round((double)(100 * AssistenciasAmanhaTarde) / AssistenciasAmanha))%"></div>
+                                                                                                        </div>
+                                                                                                        <span class="progress-description">
+                                                                                                            @((int)Math.Round((double)(100 * AssistenciasAmanhaTarde) / AssistenciasAmanha))% Do total de assistências hoje (@AssistenciasAmanha)
+                                                                                                        </span>
+                                                                                                    </div>
+                                                                                                </div>
+
+                                                                                                <div class="info-box bg-maroon">
+                                                                                                    <span class="info-box-icon"><i class="fa fa-wheelchair"></i></span>
+                                                                                                    <div class="info-box-content">
+                                                                                                        <span class="info-box-text">Quantidade WCHC + WCHS:</span>
+                                                                                                        <span class="info-box-number">@AssistenciasAmanhaCS</span>
+                                                                                                        <div class="progress">
+                                                                                                            <div class="progress-bar" style="width: @((int)Math.Round((double)(100 * AssistenciasAmanhaCS) / AssistenciasAmanha))%"></div>
+                                                                                                        </div>
+                                                                                                        <span class="progress-description">
+                                                                                                            @((int)Math.Round((double)(100 * AssistenciasAmanhaCS) / AssistenciasAmanha))% Do total de assistências hoje (@AssistenciasAmanha)
+                                                                                                        </span>
+                                                                                                    </div>
+                                                                                                </div>
+
+                                                                                                <div class="info-box bg-light-blue">
+                                                                                                    <span class="info-box-icon"><i class="fab fa-accessible-icon"></i></span>
+                                                                                                    <div class="info-box-content">
+                                                                                                        <span class="info-box-text">Restantes assistências:</span>
+                                                                                                        <span class="info-box-number">@AssistenciasAmanhaOutras</span>
+                                                                                                        <div class="progress">
+                                                                                                            <div class="progress-bar" style="width: @((int)Math.Round((double)(100 * AssistenciasAmanhaOutras) / AssistenciasAmanha))%"></div>
+                                                                                                        </div>
+                                                                                                        <span class="progress-description">
+                                                                                                            @((int)Math.Round((double)(100 * AssistenciasAmanhaOutras) / AssistenciasAmanha))% Do total de assistências hoje (@AssistenciasAmanha)
+                                                                                                        </span>
+                                                                                                    </div>
+                                                                                                </div>
+                                                                                                }
+                                                                                            </div>
+                                                                                        </div>
+                                                                                        <div class="row">
+                                                                                            @if (ChartDataAmanha != null)
+                                                                                            {
+                                                                                                var ChartDataAmanhaAeroporto = ChartDataAmanha.Where(a => a.Aeroporto == _aeroporto.Aeroporto).ToList();
+                                                                                                if (ChartDataAmanhaAeroporto.Count > 0)
+                                                                                                {
+                                                                                                    <div class="col-md-12">
+                                                                                                        <SfChart Title="Total de PMR por BRD/STA:" Theme="Theme.Bootstrap4" ID="@("ChartAmanha" + _aeroporto.Aeroporto)">
+                                                                                                            <ChartArea><ChartAreaBorder Width="0"></ChartAreaBorder></ChartArea>
+                                                                                                            <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.Category" Interval="1">
+                                                                                                                <ChartAxisMajorGridLines Width="0"></ChartAxisMajorGridLines>
+                                                                                                            </ChartPrimaryXAxis>
+                                                                                                            <ChartPrimaryYAxis>
+                                                                                                                <ChartAxisLineStyle Width="0"></ChartAxisLineStyle>
+                                                                                                                <ChartAxisLabelStyle Color="transparent"></ChartAxisLabelStyle>
+                                                                                                                <ChartAxisMajorGridLines Width="0"></ChartAxisMajorGridLines>
+                                                                                                                <ChartAxisMajorTickLines Width="0"></ChartAxisMajorTickLines>
+                                                                                                            </ChartPrimaryYAxis>
+                                                                                                            <ChartSeriesCollection>
+                                                                                                                <ChartSeries DataSource="@ChartDataAmanhaAeroporto" XName="Movimento" YName="Chegadas" Name="Chegadas"
+                                                                                                                             Fill="#32a850" Type="ChartSeriesType.Column">
+                                                                                                                    <ChartMarker>
+                                                                                                                        <ChartDataLabel Visible="true" Position="Syncfusion.Blazor.Charts.LabelPosition.Top">
+                                                                                                                            <ChartDataLabelFont FontWeight="600" Color="#ffffff"></ChartDataLabelFont>
+                                                                                                                        </ChartDataLabel>
+                                                                                                                    </ChartMarker>
+                                                                                                                </ChartSeries>
+                                                                                                                <ChartSeries DataSource="@ChartDataAmanhaAeroporto" XName="Movimento" YName="Partidas" Name="Partidas"
+                                                                                                                             Fill="#3263a8" Type="ChartSeriesType.Column">
+                                                                                                                    <ChartMarker>
+                                                                                                                        <ChartDataLabel Visible="true" Position="Syncfusion.Blazor.Charts.LabelPosition.Top">
+                                                                                                                            <ChartDataLabelFont FontWeight="600" Color="#ffffff"></ChartDataLabelFont>
+                                                                                                                        </ChartDataLabel>
+                                                                                                                    </ChartMarker>
+                                                                                                                </ChartSeries>
+                                                                                                                <ChartSeries DataSource="@ChartDataAmanhaAeroporto" Name="Total" XName="Movimento" Width="2"
+                                                                                                                             Opacity="1" YName="Total" Fill="#a83232" Type="ChartSeriesType.Spline">
+                                                                                                                    <ChartMarker Visible="true" Width="10" Height="10">
+                                                                                                                    </ChartMarker>
+                                                                                                                </ChartSeries>
+                                                                                                            </ChartSeriesCollection>
+                                                                                                            <ChartTooltipSettings Enable="true"></ChartTooltipSettings>
+                                                                                                        </SfChart>
+                                                                                                    </div>
+                                                                                                }
+                                                                                            }
+                                                                                        </div>
+                                                                                    </CardContent>
+                                                                                    <CardFooter>
+                                                                                        <CardFooterContent>
+                                                                                        </CardFooterContent>
+                                                                                    </CardFooter>
+                                                                                </SfCard>
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <div class="row p-4">
+                                                                                    <p>
+                                                                                        Não existem dados para este dia, por favor faça upload dos dados <NavLink href="/UploadData">aqui</NavLink>!
+                                                                                    </p>
+                                                                                </div>
+
+                                                                            }
+                                                                        }
+                                                                    </ContentTemplate>
+                                                                </TabItem>
+                                                            </TabItems>
+                                                        </SfTab>
+                                                    </div>
+                                                </ContentTemplate>
+                                            </TabItem>
+                                        }
+                                    </TabItems>
+                                </SfTab>
+                            }
+
+                        </div>
+                        <div class="col-md-4">
+                        </div>
+                    </div>
+                </div>
+                @*<SfCard ID="UnidadesdeHandling">
+                        <CardHeader Title="Unidades de Handling" />
+                        <CardContent>
+
+
+                        </CardContent>
+                        <CardFooter>
+                            <CardFooterContent>
+
+                            </CardFooterContent>
+                        </CardFooter>
+                    </SfCard>*@
+            </div>
+        </div>
     </Authorized>
-    <Authorizing>
-        <h1>Loading ...</h1>
-    </Authorizing>
+    <NotAuthorized>
+        <p>Não está logado.</p>
+    </NotAuthorized>
 </AuthorizeView>
+@code {
+    public List<BreadCrumbData> breadCrumbs = new List<BreadCrumbData>();
+    SfSpinner SpinnerObj;
+    SfTab TabObj;
+
+    public double[] CellSpacing = { 10, 10 };
+    private DateTime hoje = DateTime.UtcNow;
+    private DateTime amanha = DateTime.UtcNow.AddDays(1);
+
+    List<Aeroportos> listaAeroportos { get; set; }
+
+    List<AssistenciasPRM> listaAssistenciasHoje { get; set; }
+    List<AssistenciasPRM> listaAssistenciasAmanha { get; set; }
+
+    List<VoosCriticos> voosCriticosHoje { get; set; }
+    List<VoosCriticos> voosCriticosAmanha { get; set; }
+
+    List<ColumnChartData> ChartDataHoje { get; set; }
+    List<ColumnChartData> ChartDataAmanha { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        BreadCrumbData breadCrumb = new BreadCrumbData
+        {
+            Text = "Início",
+            Url = "/"
+        };
+        breadCrumbs.Add(breadCrumb);
+
+        List<AssistenciasPRM> listaAssistencias = new List<AssistenciasPRM>();
+
+        listaAssistencias = await client.GetFromJsonAsync<List<AssistenciasPRM>>("api/AssistenciasPRM");
+
+        listaAeroportos = GetAeroportos(listaAssistencias);
+
+        listaAssistenciasHoje = GetAssistenciasDia(listaAssistencias, hoje);
+        voosCriticosHoje = GetVoosCriticos(listaAssistenciasHoje, 4);
+        ChartDataHoje = GetChartData(listaAssistenciasHoje);
+
+        listaAssistenciasAmanha = GetAssistenciasDia(listaAssistencias, amanha);
+        voosCriticosAmanha = GetVoosCriticos(listaAssistenciasAmanha, 4);
+        ChartDataAmanha = GetChartData(listaAssistenciasAmanha);
+    }
+
+    public async Task FillData()
+    {
+        List<AssistenciasPRM> listaAssistencias = new List<AssistenciasPRM>();
+
+        listaAssistencias = await client.GetFromJsonAsync<List<AssistenciasPRM>>("api/AssistenciasPRM");
+
+        listaAeroportos = GetAeroportos(listaAssistencias);
+
+        listaAssistenciasHoje = GetAssistenciasDia(listaAssistencias, hoje);
+        voosCriticosHoje = GetVoosCriticos(listaAssistenciasHoje, 4);
+        ChartDataHoje = GetChartData(listaAssistenciasHoje);
+
+        listaAssistenciasAmanha = GetAssistenciasDia(listaAssistencias, amanha);
+        voosCriticosAmanha = GetVoosCriticos(listaAssistenciasAmanha, 4);
+        ChartDataAmanha = GetChartData(listaAssistenciasAmanha);
+
+        await InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
+    }
+
+    private static List<AssistenciasPRM> GetAssistenciasDia(List<AssistenciasPRM> _listaAssistencias, DateTime _dia)
+    {
+        List<AssistenciasPRM> _listaAssistenciasDia = new List<AssistenciasPRM>();
+        _listaAssistenciasDia = _listaAssistencias.Where(u => u.Data.Day == _dia.Day).ToList();
+
+        return _listaAssistenciasDia;
+    }
+
+    private static List<VoosCriticos> GetVoosCriticos(List<AssistenciasPRM> _listaAssistenciasDia, int _quantidade)
+    {
+        List<VoosCriticos> _voosCriticos = new List<VoosCriticos>();
+
+        var _tempListaAssistencias = _listaAssistenciasDia.GroupBy(v => v.Voo).Where(c => c.Count() >= _quantidade)
+                          .Select(v => new
+                          {
+                              uh = _listaAssistenciasDia.Where(d => d.Voo == v.Key).Select(d => d.Aeroporto).FirstOrDefault(),
+                              horario = _listaAssistenciasDia.Where(d => d.Voo == v.Key).Select(d => d.Data).FirstOrDefault(),
+                              mov = _listaAssistenciasDia.Where(d => d.Voo == v.Key).Select(d => d.Mov).FirstOrDefault(),
+                              od = _listaAssistenciasDia.Where(d => d.Voo == v.Key).Select(d => d.OrigDest).FirstOrDefault(),
+                              num = v.Key,
+                              conta = v.Count()
+                          }
+                          ).OrderBy(h => h.horario).ToList();
+
+        foreach (var item in _tempListaAssistencias)
+        {
+            VoosCriticos criticos = new VoosCriticos
+            {
+                Aeroporto = item.uh,
+                Horario = item.horario,
+                Mov = item.mov,
+                Od = item.od,
+                Num = item.num,
+                Conta = item.conta
+            };
+
+            _voosCriticos.Add(criticos);
+        }
+
+        return _voosCriticos;
+    }
+
+    private static List<ColumnChartData> GetChartData(List<AssistenciasPRM> _listaAssistenciasDia)
+    {
+        List<ColumnChartData> _chartData = new List<ColumnChartData>();
+
+        string[] aeroportos = _listaAssistenciasDia.Select(h => h.Aeroporto).Distinct().ToArray();
+
+        foreach (var aeroporto in aeroportos)
+        {
+            List<AssistenciasPRM> _listaAssistenciasDiaAeroporto = _listaAssistenciasDia.Where(a => a.Aeroporto == aeroporto).ToList();
+
+            int[] dataHourH = _listaAssistenciasDiaAeroporto.Select(h => h.Data.Hour).Distinct().ToArray();
+            int[] estimaHourH = _listaAssistenciasDiaAeroporto.Select(h => h.EstimaApresentacao.Hour).Distinct().ToArray();
+            int[] embarqueHourH = _listaAssistenciasDiaAeroporto.Select(h => h.HoraEmbarque.Hour).Distinct().ToArray();
+            int[] tempArrH = dataHourH.Union(estimaHourH).ToArray();
+            int[] HoursH = tempArrH.Union(embarqueHourH).ToArray();
+
+            Array.Sort(HoursH);
+
+            foreach (var items in HoursH
+               .Select(h => new
+               {
+                   hora = h,
+                   uh = aeroporto,
+                   Arr = _listaAssistenciasDia.Where(
+                               d => d.Mov == "A"
+                           ).Count(
+                            m => m.Data.Hour == h
+                       ),
+                   Dep = _listaAssistenciasDia.Where(
+                               d => d.Mov == "D"
+                           ).Count(m => m.Data.Hour == h)
+               }
+               ).OrderBy(h => h.hora))
+            {
+                ColumnChartData data = new ColumnChartData
+                {
+                    Aeroporto = items.uh.ToString(),
+                    Movimento = items.hora + ":00",
+                    Chegadas = items.Arr,
+                    Partidas = items.Dep,
+                    Total = items.Arr + items.Dep
+
+                };
+                _chartData.Add(data);
+            }
+        }
+
+        return _chartData;
+    }
+
+    private static List<Aeroportos> GetAeroportos(List<AssistenciasPRM> _listaAssistencias)
+    {
+        List<Aeroportos> _aeroportos = new List<Aeroportos>();
+        var listaAeroportos = _listaAssistencias.Select(h => h.Aeroporto).Distinct().ToList();
+        foreach (var uh in listaAeroportos)
+        {
+            Aeroportos temp = new Aeroportos
+            {
+                Aeroporto = uh
+            };
+            _aeroportos.Add(temp);
+        }
+
+        return _aeroportos;
+    }
+
+    public async void OnTabSelected(Syncfusion.Blazor.Navigations.SelectEventArgs args)
+    {
+        await FillData();
+    }
+
+    public class VoosCriticos
+    {
+        public string Aeroporto { get; set; }
+        public DateTime Horario { get; set; }
+        public string Mov { get; set; }
+        public string Od { get; set; }
+        public string Num { get; set; }
+        public int Conta { get; set; }
+    }
+
+    public class ColumnChartData
+    {
+        public string Aeroporto { get; set; }
+        public string Movimento { get; set; }
+        public int Chegadas { get; set; }
+        public int Partidas { get; set; }
+        public int Total { get; set; }
+    }
+
+    public class Aeroportos
+    {
+        public string Aeroporto { get; set; }
+    }
+
+}

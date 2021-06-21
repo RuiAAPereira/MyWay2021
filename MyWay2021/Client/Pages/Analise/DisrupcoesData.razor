@@ -1,0 +1,289 @@
+﻿@page "/disrupcoes"
+
+@using MyWay2021.Shared.Models.Analise
+
+@inject HttpClient http
+
+<SfToast ID="toast_error" @ref="ToastError" ShowCloseButton="true" NewestOnTop="true" ShowProgressBar="true" Width="300px">
+    <ToastPosition X="Center"></ToastPosition>
+</SfToast>
+
+<AuthorizeView Context="authContext" Roles="@("Administrador")">
+    <Authorized>
+
+        <SfSpinner @ref="SpinnerObj" Target="#container"></SfSpinner>
+
+        <div class="container-fluid" id="container">
+            <div class="row">
+                <BreadCrumb breadCrumbs="breadCrumbs"></BreadCrumb>
+            </div>
+            <div class="row">
+                @if (MyData != null)
+                {
+                    <div class="col-12">
+                        @if (!string.IsNullOrEmpty(Message))
+                        {
+                            <h3>@Message</h3>
+                        }
+                    </div>
+                    <div class="col-md-3 col-sm-6 col-xs-12">
+                        <div class="row">
+                            <div class="box box-success ">
+                                <div class="box-header with-border">
+                                    <h3 class="box-title">Selecionar data</h3>
+
+                                    <div class="box-tools pull-right">
+                                        <button type="button" class="btn btn-box-tool" data-widget="collapse">
+                                            <i class="fa fa-minus"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+                                    </div>
+                                </div>
+                                <div class="box-body">
+                                    <div class="row">
+                                        <div class="col-md-6 col-sm-6 col-xs-12">
+                                            <SfDatePicker TValue="DateTime?" Value='@DateValueInicio' Min='@MinDate' Max='@MaxDate' Placeholder='Data início'>
+                                                <DatePickerEvents TValue="DateTime?" ValueChange="@onChangeDataInicio"></DatePickerEvents>
+                                            </SfDatePicker>
+                                        </div>
+                                        <div class="col-md-6 col-sm-6 col-xs-12">
+                                            <SfDatePicker TValue="DateTime?" Value='@DateValueFim' Min='@MinDate' Max='@MaxDate' Placeholder='Data fim'>
+                                                <DatePickerEvents TValue="DateTime?" ValueChange="@onChangeDataFim"></DatePickerEvents>
+                                            </SfDatePicker>
+                                        </div>
+                                    </div>
+                                    <div class="row p-2">
+                                        <div class="col-md-6 col-sm-6 col-xs-12">
+                                            <SfDropDownList TValue="Guid" TItem="Uh" Placeholder="Selecionar UH" required CssClass="@Validate">
+                                                <SfDataManager Url="api/uh/GetUhOwned" Adaptor="Adaptors.WebApiAdaptor" CrossDomain="true"></SfDataManager>
+                                                <DropDownListEvents TValue="Guid" TItem="Uh" ValueChange="@OnDdlChange"></DropDownListEvents>
+                                                <DropDownListFieldSettings Text="Nome" Value="ID"></DropDownListFieldSettings>
+                                            </SfDropDownList>
+                                        </div>
+                                        <div class="col-md-6 col-sm-6 col-xs-12">
+                                            <SfButton CssClass="e-primary" @onclick="ProcessFile">Filtrar</SfButton>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @foreach (var item in MyData)
+                        {
+                            <div class="row">
+                                <div class="info-box">
+                                    <span class="info-box-icon @item.BgColor"><i class="@item.Icon"></i></span>
+
+                                    <div class="info-box-content">
+                                        <span class="info-box-text">@item.Nome</span>
+                                        <span class="info-box-number">@item.Total</span>
+                                    </div>
+                                    <!-- /.info-box-content -->
+                                </div>
+                                <!-- /.info-box -->
+                            </div>
+                            <!-- /.col -->
+                            <!-- fix for small devices only -->
+                            <div class="clearfix visible-sm-block"></div>
+                        }
+                    </div>
+                    <div class="col-md-9 col-sm-6 col-xs-12">
+                        <div class="box box-success">
+                            <div class="box-header with-border">
+                                <h3 class="box-title">Tabela</h3>
+
+                                <div class="box-tools pull-right">
+                                    <button type="button" class="btn btn-box-tool" data-widget="collapse">
+                                        <i class="fa fa-minus"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+                                </div>
+                            </div>
+                            <div class="box-body">
+                                <div class="chart">
+                                    <SfChart Title="@Message" Theme="Theme.Bootstrap4">
+                                        <ChartArea><ChartAreaBorder Width="0"></ChartAreaBorder></ChartArea>
+                                        <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.Category" Title="Title">
+                                            <ChartAxisMajorGridLines Width="0"></ChartAxisMajorGridLines>
+                                        </ChartPrimaryXAxis>
+                                        <ChartPrimaryYAxis EdgeLabelPlacement="EdgeLabelPlacement.Shift">
+                                            <ChartAxisLineStyle Width="0"></ChartAxisLineStyle>
+                                            <ChartAxisMajorTickLines Width="0"></ChartAxisMajorTickLines>
+                                            <ChartAxisMajorGridLines Width="0"></ChartAxisMajorGridLines>
+                                        </ChartPrimaryYAxis>
+                                        <ChartTooltipSettings Enable="true"></ChartTooltipSettings>
+                                        <ChartSeriesCollection>
+                                            <ChartSeries DataSource="@MyData" XName="Nome" YName="Total" Type="ChartSeriesType.Bar" PointColorMapping="Color">
+                                                <ChartMarker>
+                                                    <ChartDataLabel Visible="true" />
+                                                </ChartMarker>
+                                            </ChartSeries>
+                                        </ChartSeriesCollection>
+                                    </SfChart>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="box box-success">
+                            <div class="box-header with-border">
+                                <h3 class="box-title">Grafico circular</h3>
+
+                                <div class="box-tools pull-right">
+                                    <button type="button" class="btn btn-box-tool" data-widget="collapse">
+                                        <i class="fa fa-minus"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+                                </div>
+                            </div>
+                            <div class="box-body">
+                                <SfAccumulationChart Title="@Message" EnableSmartLabels="true">
+                                    <AccumulationChartLegendSettings Visible="false"></AccumulationChartLegendSettings>
+
+                                    <AccumulationChartSeriesCollection>
+                                        <AccumulationChartSeries DataSource="@MyData" XName="Nome" YName="Total"
+                                                                 Name="Nome" PointColorMapping="Color">
+                                        </AccumulationChartSeries>
+                                    </AccumulationChartSeriesCollection>
+
+                                    <AccumulationChartLegendSettings Visible="true"></AccumulationChartLegendSettings>
+                                </SfAccumulationChart>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </Authorized>
+    <Authorizing>
+        <h1>Loading ...</h1>
+    </Authorizing>
+</AuthorizeView>
+
+@code {
+    public List<BreadCrumbData> breadCrumbs = new List<BreadCrumbData>();
+    SfSpinner SpinnerObj;
+    SfToast ToastError;
+
+    private string ToastTitle = "";
+    private string ToastContent = "";
+    string Message = "";
+
+    public Guid uhValue { get; set; } = Guid.Empty;
+    string Validate = "e-error";
+
+    private List<ToastModel> Toast = new List<ToastModel>{
+        new ToastModel{ Title = "ERRO!", Content="Por favor selecione uma data de início e fim.", CssClass="e-toast-danger", Icon="e-error toast-icons" },
+        new ToastModel{ Title = "ERRO!", Content="A data de início não pode ser superior à data de fim.", CssClass="e-toast-danger", Icon="e-error toast-icons" }
+    };
+
+    List<Disrupcoes> MyData { get; set; }
+
+    public DateTime? DateValueInicio { get; set; }
+    public DateTime? DateValueFim { get; set; }
+    public DateTime MinDate { get; set; }
+    public DateTime MaxDate { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        BreadCrumbData breadCrumb = new BreadCrumbData
+        {
+            Text = "Início",
+            Url = "/"
+        };
+        breadCrumbs.Add(breadCrumb);
+
+        breadCrumb = new BreadCrumbData
+        {
+            Text = "Disrupções",
+            Url = "/disrupcoes"
+        };
+        breadCrumbs.Add(breadCrumb);
+
+        List<DadosAeroporto> tempDadosAeroporto = await http.GetFromJsonAsync<List<DadosAeroporto>>("api/dadosAeroporto");
+
+        MinDate = tempDadosAeroporto.Select(d => d.ScheduleTimeUTC).Min();
+        MaxDate = tempDadosAeroporto.Select(d => d.ScheduleTimeUTC).Max();
+
+        MyData = await http.GetFromJsonAsync<List<Disrupcoes>>($"api/disrupcoes?timeinicio={MinDate.ToShortDateString()}&timefim={MaxDate.ToShortDateString()}");
+
+        Message = "A mostrar dados entre " + MinDate.ToString("dd/MM/yyyy") + " e " + MaxDate.ToString("dd/MM/yyyy");
+        base.StateHasChanged();
+
+    }
+
+    private void onChangeDataInicio(Syncfusion.Blazor.Calendars.ChangedEventArgs<DateTime?> args)
+    {
+        DateValueInicio = args.Value;
+        //StateHasChanged();
+    }
+    private void onChangeDataFim(Syncfusion.Blazor.Calendars.ChangedEventArgs<DateTime?> args)
+    {
+        DateValueFim = args.Value;
+        //StateHasChanged();
+    }
+
+    private async Task ProcessFile()
+    {
+        try
+        {
+            DateTime inicio = DateTime.Parse(DateValueInicio.ToString());
+            DateTime fim = DateTime.Parse(DateValueFim.ToString());
+
+            if (inicio > fim)
+            {
+                await this.ToastError.Show(Toast[1]);
+                return;
+            }
+            else
+            {
+                await SpinnerObj.ShowAsync();
+
+                MyData = await http.GetFromJsonAsync<List<Disrupcoes>>($"api/disrupcoes?uhID={uhValue}&timeinicio={inicio.ToShortDateString()}&timefim={fim.ToShortDateString()}");
+                if (uhValue == Guid.Empty)
+                {
+                    Message = "A mostrar dados entre " + inicio.ToString("dd/MM/yyyy") + " e " + fim.ToString("dd/MM/yyyy");
+                }
+                else
+                {
+                    var uh = await http.GetFromJsonAsync<Uh>($"api/uh/{uhValue}");
+
+                    Message = "A mostrar dados de " + uh.Nome + " entre " + inicio.ToString("dd/MM/yyyy") + " e " + fim.ToString("dd/MM/yyyy");
+                }
+                base.StateHasChanged();
+
+                await SpinnerObj.HideAsync();
+            }
+        }
+        catch (Exception)
+        {
+            await this.ToastError.Show(Toast[0]);
+            return;
+        }
+    }
+
+    public void OnDdlChange(Syncfusion.Blazor.DropDowns.ChangeEventArgs<Guid, Uh> args)
+    {
+        if (args.Value == Guid.Empty)
+        {
+            this.Validate = "e-error";
+        }
+        else
+        {
+            this.Validate = "e-success";
+        }
+
+        this.uhValue = args.ItemData.ID;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            //No Delay required
+            //await Task.Delay(600);
+            await SpinnerObj.ShowAsync();
+            await Task.Delay(5000);
+            await SpinnerObj.HideAsync();
+        }
+    }
+
+}

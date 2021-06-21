@@ -1,0 +1,204 @@
+﻿@page "/addrelatorio"
+
+@inject IToastService toastService
+@inject HttpClient http
+@inject IJSRuntime js
+@using Syncfusion.Blazor.Navigations
+@using MyWay2021.Shared.Models.Relatorios
+
+<AuthorizeView Context="authContext" Roles="@("Administrador")">
+    <Authorized>
+        <BreadCrumb breadCrumbs="breadCrumbs"></BreadCrumb>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12 col-md-8 col-lg-6">
+                    <SfTab @ref="Tab" CssClass="BlazorTab" Height="390" LoadOn="ContentLoad.Demand">
+                        <TabEvents Created="TabCreate"></TabEvents>
+                        <TabItems>
+                            <TabItem>
+                                <ChildContent>
+                                    <TabHeader Text="Relatório"></TabHeader>
+                                </ChildContent>
+                                <ContentTemplate>
+                                    <SfCard ID="relatorio">
+                                        <CardHeader Title="Criar relatório" />
+                                        <CardContent>
+                                            <EditForm Model="@ModelRelatorio" OnValidSubmit="@HandleRelatorioValidSubmit">
+                                                <DataAnnotationsValidator />
+                                                <input type="hidden" @bind-value="@ModelRelatorio.ID" />
+                                                <div class="form-row">
+                                                    <div class="form-group col-md-4">
+                                                        <SfDatePicker Placeholder="Data" TValue="DateTime"
+                                                                      FloatLabelType="FloatLabelType.Auto" @bind-value="@ModelRelatorio.Dia"
+                                                                      Min="@((DateTime.Now).AddMonths(-1))" Max="@(DateTime.Now.AddMonths(1))">
+                                                        </SfDatePicker>
+                                                    </div>
+                                                    <div class="form-group col-md-4">
+                                                        <UserUhList @bind-UhID="@ModelRelatorio.UhID" CssClass="@ValidateUh" />
+                                                    </div>
+                                                    <div class="form-group col-md-4"></div>
+                                                </div>
+                                                <div class="form-row">
+                                                    <div class="form-group col-md-4">
+                                                        <SfNumericTextBox @bind-Value="@ModelRelatorio.NumChegadas"
+                                                                          Placeholder="Chegadas" FloatLabelType="FloatLabelType.Auto">
+                                                        </SfNumericTextBox>
+                                                    </div>
+                                                    <div class="form-group col-md-4">
+                                                        <SfNumericTextBox @bind-Value="@ModelRelatorio.NumPartidas"
+                                                                          Placeholder="Partidas" FloatLabelType="FloatLabelType.Auto">
+                                                        </SfNumericTextBox>
+                                                    </div>
+                                                    <div class="form-group col-md-4">
+                                                        <SfNumericTextBox Value="@(ModelRelatorio.NumChegadas + ModelRelatorio.NumPartidas)"
+                                                                          Placeholder="Total" FloatLabelType="FloatLabelType.Auto"
+                                                                          Readonly="true">
+                                                        </SfNumericTextBox>
+                                                    </div>
+                                                </div>
+                                            </EditForm>
+                                        </CardContent>
+                                        <CardFooter>
+                                            <CardFooterContent>
+                                                <div class="float-right">
+                                                    <SfButton @onclick="ValidateRelatorio">Seguinte</SfButton>
+                                                </div>
+                                            </CardFooterContent>
+                                        </CardFooter>
+                                    </SfCard>
+                                </ContentTemplate>
+                            </TabItem>
+                            <TabItem>
+                                <ChildContent>
+                                    <TabHeader Text="Train List"></TabHeader>
+                                </ChildContent>
+                                <ContentTemplate>
+                                    <div id="selectTrain">
+                                        <div class="wizard-title">Select the train from the list </div>
+                                        <div class="responsive-align">
+
+                                        </div>
+                                    </div>
+                                </ContentTemplate>
+                            </TabItem>
+                            <TabItem>
+                                <ChildContent>
+                                    <TabHeader Text="Add Passenger"></TabHeader>
+                                </ChildContent>
+                                <ContentTemplate>
+                                    <div id="details">
+                                        <div class="details-page wizard-title">Enter the passenger details</div>
+                                        <div class="responsive-align">
+
+                                        </div>
+                                    </div>
+                                </ContentTemplate>
+                            </TabItem>
+                            <TabItem>
+                                <ChildContent>
+                                    <TabHeader Text="Make Payment"></TabHeader>
+                                </ChildContent>
+                                <ContentTemplate>
+                                    <div id="confirm">
+                                        <div class="tab-title1 wizard-title">Confirm the details and proceed</div>
+                                        <div class="responsive-align">
+
+                                        </div>
+                                    </div>
+                                </ContentTemplate>
+                            </TabItem>
+                        </TabItems>
+                    </SfTab>
+                </div>
+            </div>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <p>Não está logado como administrador.</p>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    SfTab Tab;
+    private RelatorioDiario ModelRelatorio { get; set; } = new RelatorioDiario();
+    public Equipamento ModelEquipamento { get; set; }
+    public Incumprimento ModelIncumprimento { get; set; }
+    public Sla ModelSla { get; set; }
+    public StaffOnDuty ModelStaff { get; set; }
+    public TrabalhoSuplementar ModelHorasExtra { get; set; }
+
+    List<Funcao> funcoes { get; set; }
+    List<Uh> uhs { get; set; }
+
+    string ValidateUh = "e-success";
+
+    public List<BreadCrumbData> breadCrumbs = new List<BreadCrumbData>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        BreadCrumbData breadCrumb = new BreadCrumbData
+        {
+            Text = "Início",
+            Url = "/"
+        };
+        breadCrumbs.Add(breadCrumb);
+
+        breadCrumb = new BreadCrumbData
+        {
+            Text = "Relatórios",
+            Url = "/relatorios"
+        };
+        breadCrumbs.Add(breadCrumb);
+
+        breadCrumb = new BreadCrumbData
+        {
+            Text = "Adicionar relatório",
+            Url = "/addrelatorio"
+        };
+        breadCrumbs.Add(breadCrumb);
+
+        funcoes = await http.GetFromJsonAsync<List<Funcao>>("api/funcao");
+        uhs = await http.GetFromJsonAsync<List<Uh>>("api/uh");
+    }
+
+    private async void HandleRelatorioValidSubmit()
+    {
+        //if (Model.RelatorioID == Guid.Empty)
+        //{
+        //    await http.PostAsJsonAsync("api/relatorio", Relatorio);
+        //    toastService.ShowSuccess("Função adicionada com sucesso", "Sucesso!");
+        //}
+        //else
+        //{
+        //    await http.PutAsJsonAsync("api/funcao", Model);
+        //    toastService.ShowSuccess("Função editada com sucesso", "Sucesso!");
+        //}
+    }
+
+    public void ValidateRelatorio()
+    {
+        bool validDay = true;
+        if (ModelRelatorio.Dia < DateTime.UtcNow.AddMonths(-1))
+        {
+            validDay = false;
+        }
+        else
+        {
+            validDay = true;
+        }
+
+        Tab.EnableTab(1, true);
+        Tab.EnableTab(2, false);
+        Tab.EnableTab(3, false);
+        Tab.Select(1);
+        StateHasChanged();
+    }
+
+    public void TabCreate()
+    {
+        Tab.EnableTab(1, false);
+        Tab.EnableTab(2, false);
+        Tab.EnableTab(3, false);
+    }
+
+}

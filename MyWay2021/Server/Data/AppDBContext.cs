@@ -3,12 +3,16 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
-using MyWay2021.Server.Configuration;
 using MyWay2021.Server.Models.Identity;
 using MyWay2021.Shared.Models;
+using MyWay2021.Shared.Models.Analise;
+using MyWay2021.Shared.Models.Atrasos;
+using MyWay2021.Shared.Models.Colaboradores;
+using MyWay2021.Shared.Models.Relatorios;
 using MyWay2021.Shared.Models.Tabelas;
 using System;
 using System.Collections;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -26,26 +30,71 @@ namespace MyWay2021.Server.Data
             _httpContextAccessor = httpContextAccessor;
         }
 
-        #region set DbSet
-        public DbSet<Uh> Uhs { get; set; }
+        #region set DbSet Analise
+        public DbSet<AssistenciasPRM> AssistenciasPRMS { get; set; }
+        public DbSet<DadosAeroporto> DadosAeroportos { get; set; }
+        public DbSet<Escala> Escalas { get; set; }
+        public DbSet<HistoricoAssistencia> HistoricoAssistencias { get; set; }
+        #endregion
+        #region Set DbSet Atrasos
+        //public DbSet<Atraso> Atrasos { get; set; }
+        //public DbSet<AtrasoCodigo> AtrasoCodigos { get; set; }
+        //public DbSet<AtrasoMotivo> AtrasoMotivos { get; set; }
+        //public DbSet<Codigo> Codigos { get; set; }
+        //public DbSet<Motivo> Motivos { get; set; }
+        //public DbSet<Supervisor> Supervisores { get; set; }
+        #endregion
+        #region Set DbSet Colaboradores
+        //public DbSet<Colaborador> Colaboradores { get; set; }
+        //public DbSet<DadosPessoais> DadosPessoais { get; set; }
+        //public DbSet<Email> Emails { get; set; }
+        //public DbSet<Observacao> Observacoes { get; set; }
+        //public DbSet<Telefone> Telefones { get; set; }
+        #endregion
+        #region Set DbSet Identity
         public DbSet<UserUh> UsersUhs { get; set; }
         #endregion
+        #region set DbSet Relatorios
+        //public DbSet<RelatorioDiario> RelatoriosDiarios { get; set; }
+        //public DbSet<Incumprimento> Incumprimentos { get; set; }
+        //public DbSet<Equipamento> Equipamentos { get; set; }
+        //public DbSet<Sla> Slas { get; set; }
+        //public DbSet<StaffOnDuty> Staff { get; set; }
+        //public DbSet<TrabalhoSuplementar> HorasExtra { get; set; }
+        #endregion
+        #region set DbSet Tabelas
+        //public DbSet<Categoria> Categorias { get; set; }
+        //public DbSet<Contrato> Contratos { get; set; }
+        //public DbSet<Departamento> Departamentos { get; set; }
+        //public DbSet<Equipa> Equipas { get; set; }
+        //public DbSet<Formador> Formadores { get; set; }
+        public DbSet<Formando> Formandos { get; set; }
+        public DbSet<Funcao> Funcoes { get; set; }
+        //public DbSet<Horario> Horarios { get; set; }
+        public DbSet<Justificacao> Justificacoes { get; set; }
+        public DbSet<Parametro> Parametros { get; set; }
+        public DbSet<Pier> Piers { get; set; }
+        public DbSet<Plataforma> Plataformas { get; set; }
+        public DbSet<Porta> Portas { get; set; }
+        public DbSet<Sala> Salas { get; set; }
+        public DbSet<Stand> Stands { get; set; }
+        public DbSet<TipoAssistencia> TiposAssistencia { get; set; }
+        public DbSet<TipoMensagem> TiposMensagem { get; set; }
+        public DbSet<TipoVoo> TipoVoos { get; set; }
+        public DbSet<Uh> Uhs { get; set; }
+        #endregion
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        protected override void OnModelCreating(ModelBuilder builder)
         {
-            modelBuilder.ApplyConfiguration(new UhConfiguration());
-            modelBuilder.ApplyConfiguration(new RoleConfiguration());
-            modelBuilder.ApplyConfiguration(new UserConfiguration());
-            modelBuilder.ApplyConfiguration(new UserUhConfiguration());
-            modelBuilder.ApplyConfiguration(new UserRoleConfiguration());
+            builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 
-            modelBuilder.Entity<UserUh>()
+            builder.Entity<UserUh>()
                 .HasKey(e => new { e.UserId, e.UhID });
-            modelBuilder.Entity<IdentityUserToken<string>>()
+            builder.Entity<IdentityUserToken<string>>()
                 .HasKey(e => new { e.UserId });
-            modelBuilder.Entity<IdentityUserLogin<string>>()
+            builder.Entity<IdentityUserLogin<string>>()
                 .HasKey(e => new { e.UserId });
-            modelBuilder.Entity<AppUserRole>()
+            builder.Entity<AppUserRole>()
                 .HasKey(e => new { e.UserId, e.RoleId });
         }
 

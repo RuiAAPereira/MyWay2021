@@ -7,7 +7,7 @@ namespace MyWay2021.Shared.Models.Identity
     {
         public Guid Id { get; set; }
 
-        public string Name { get; set; }
+        public string Nome { get; set; }
 
         public string UserName { get; set; }
 

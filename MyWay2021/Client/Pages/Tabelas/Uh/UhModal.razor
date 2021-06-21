@@ -5,7 +5,7 @@
 <div class="modal fade" id="uhModal" tabindex="-1"
      role="dialog" aria-labelledby="uhModal"
      aria-hidden="true" backdrop="static">
-    <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="CustomHeader">@CustomHeader</h5>
@@ -18,15 +18,29 @@
                     <div class="mx-3">
                         <DataAnnotationsValidator />
                         <input type="hidden" @bind-value="@Model.ID" />
-                        <div class="form-group row">
-                            <SfTextBox Placeholder="Nome" @bind-Value="@Model.Nome"
-                                       FloatLabelType="@FloatLabelType.Auto" Type="InputType.Text"></SfTextBox>
-                            <ValidationMessage For="@(() => Model.Nome)" />
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <SfTextBox Placeholder="Nome" @bind-Value="@Model.Nome"
+                                           FloatLabelType="@FloatLabelType.Auto" Type="InputType.Text"></SfTextBox>
+                                <ValidationMessage For="@(() => Model.Nome)" />
+                            </div>
+                            <div class="form-group col-md-6">
+                                <SfTextBox Placeholder="IATA" @bind-Value="@Model.IATA"
+                                           FloatLabelType="@FloatLabelType.Auto" Type="InputType.Text"></SfTextBox>
+                                <ValidationMessage For="@(() => Model.IATA)" />
+                            </div>
                         </div>
-                        <div class="form-group row">
-                            <SfTextBox Placeholder="UserName" @bind-Value="@Model.IATA"
-                                       FloatLabelType="@FloatLabelType.Auto" Type="InputType.Text"></SfTextBox>
-                            <ValidationMessage For="@(() => Model.IATA)" />
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <SfTextBox Placeholder="Código" @bind-Value="@Model.CodAeroporto"
+                                           FloatLabelType="@FloatLabelType.Auto" Type="InputType.Text"></SfTextBox>
+                                <ValidationMessage For="@(() => Model.CodAeroporto)" />
+                            </div>
+                            <div class="form-group col-md-6">
+                                <SfTextBox Placeholder="Aeroporto" @bind-Value="@Model.NomeAeroporto"
+                                           FloatLabelType="@FloatLabelType.Auto" Type="InputType.Text"></SfTextBox>
+                                <ValidationMessage For="@(() => Model.NomeAeroporto)" />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -46,7 +60,7 @@
 </div>
 
 @code{
-    [Parameter] public Action DataChanged { get; set; }
+    [Parameter] public System.Action DataChanged { get; set; }
     [Parameter] public RenderFragment CustomHeader { get; set; }
     [Parameter] public Uh Model { get; set; }
 

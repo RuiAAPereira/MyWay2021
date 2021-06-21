@@ -1,0 +1,38 @@
+﻿
+
+<SfToast @ref="ToastObj"  CssClass="@CssClass" NewestOnTop="true" ShowProgressBar="true" ShowCloseButton="true" 
+         Timeout="5000" Width="50%" Height="auto">
+    <ToastTemplates>
+        <Title>
+            @ToastTitle
+        </Title>
+        <Content>
+            @((MarkupString)ToastContent)
+        </Content>
+    </ToastTemplates>
+    <ToastPosition X="Center"></ToastPosition>
+</SfToast>
+
+
+@code {
+
+    SfToast ToastObj;
+
+    [Parameter]
+    public string ToastTitle { get; set; } = "";
+
+    [Parameter]
+    public string ToastContent { get; set; } = "";
+
+    [Parameter]
+    public string CssClass { get; set; } = "e-toast-danger";
+
+    public async Task Show()
+    {
+        await this.ToastObj.Show();
+    }
+    public void Hide(object element = null)
+    {
+        this.ToastObj.Hide("All");
+    }
+}

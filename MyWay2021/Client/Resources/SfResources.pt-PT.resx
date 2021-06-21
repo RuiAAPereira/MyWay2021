@@ -3469,10 +3469,6 @@
     <value>Arraste um cabeçalho de coluna aqui para agrupar sua coluna</value>
     <comment/>
   </data>
-  <data name="Grid_UnGroup" xml:space="preserve">
-    <value>Clique aqui para desagrupar</value>
-    <comment/>
-  </data>
   <data name="Grid_GroupDisable" xml:space="preserve">
     <value>O agrupamento está desativado para esta coluna</value>
     <comment/>

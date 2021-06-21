@@ -2,7 +2,7 @@
 
 @if (uhs != null)
 {
-    @if (UhID == null || UhID == Guid.Empty)
+    @if (UhID == Guid.Empty)
     {
         <span class="alert-danger">
             <strong>Erro! :</strong>
@@ -11,9 +11,10 @@
     }
     else
     {
-        <SfDropDownList TValue="Guid" TItem="Uh"
+        <SfDropDownList TValue="Guid" TItem="Uh" CssClass="@CssClass"
                         Placeholder="Unidade de handling"
-                        @bind-Value="@UhID" DataSource="@uhs">
+                        @bind-Value="@UhID" DataSource="@uhs"
+                        FloatLabelType="FloatLabelType.Auto">
             <DropDownListFieldSettings Text="Nome" Value="ID"></DropDownListFieldSettings>
         </SfDropDownList>
     }
@@ -35,6 +36,7 @@
 
     [Parameter] public EventCallback<Guid> UhIDChanged { get; set; }
     [Parameter] public string Placeholder { get; set; }
+    [Parameter] public string CssClass { get; set; }
 
     private Guid _uhID;
     public List<Uh> uhs { get; set; }
@@ -45,7 +47,7 @@
 
         if (uhs != null)
         {
-            if (UhID == null || UhID == Guid.Empty)
+            if (UhID == Guid.Empty)
             {
                 UhID = uhs.Select(i => i.ID).FirstOrDefault();
             }

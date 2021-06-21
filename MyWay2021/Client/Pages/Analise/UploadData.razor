@@ -1,0 +1,619 @@
+﻿@page "/uploadData"
+
+@using MyWay2021.Shared.Models.Analise
+@using System.IO
+@using System.Globalization
+@using OfficeOpenXml
+@using System.Data
+
+@inject HttpClient http
+
+<SfToast ID="toast_error" @ref="ToastError" ShowCloseButton="true" NewestOnTop="true" ShowProgressBar="true">
+    <ToastPosition X="Center"></ToastPosition>
+</SfToast>
+<SfToast ID="toast_ok" @ref="ToastOk" ShowCloseButton="true" NewestOnTop="true" ShowProgressBar="true"
+         CssClass="e-toast-success" Icon="e-success toast-icons">
+    <ToastPosition X="Center"></ToastPosition>
+    <ToastTemplates>
+        <Title>
+            @ToastTitle
+        </Title>
+        <Content>
+            @((MarkupString)ToastContent)
+        </Content>
+    </ToastTemplates>
+</SfToast>
+
+<AuthorizeView Context="authContext" Roles="@("Administrador")">
+    <Authorized>
+        <div class="container-fluid">
+            <div class="row">
+                <BreadCrumb breadCrumbs="breadCrumbs"></BreadCrumb>
+            </div>
+            <div class="row">
+                <SfSpinner @ref="SpinnerObj" Target="#container"></SfSpinner>
+
+                <div id="container" class="row col-12">
+                    <div class="row col-12">
+                        <div class="col-md-3 col-sm-3 col-xs-6">
+                            <div class="row p-2">
+                                <SfDropDownList TValue="Guid" TItem="Uh" Placeholder="Selecionar UH" required CssClass="@Validate">
+                                    <SfDataManager Url="api/uh/GetUhOwned" Adaptor="Adaptors.WebApiAdaptor" CrossDomain="true"></SfDataManager>
+                                    <DropDownListEvents TValue="Guid" TItem="Uh" ValueChange="@OnChange"></DropDownListEvents>
+                                    <DropDownListFieldSettings Text="Nome" Value="ID"></DropDownListFieldSettings>
+                                </SfDropDownList>
+                            </div>
+                            <div class="row p-2">
+                                <InputFile OnChange="@OnFileSelection" accept=".xls,.xlsx">Escolher ficheiro</InputFile>
+                            </div>
+                            <div class="row p-2">
+                                <SfButton CssClass="e-primary" @onclick="ProcessFile">Processar Ficheiro...</SfButton>
+                            </div>
+                        </div>
+                        <div class="row col-12">
+                            <div class="col-md-6 col-sm-6 col-xs-12">
+                                @if (maxProgres > 0)
+                                {
+                                    <div class="row p-2">
+                                        <SfProgressBar Type="ProgressType.Linear" Value="@progress" Height="100"
+                                                       Minimum="0" Maximum="@maxProgres" ShowProgressValue="true">
+                                            <ProgressBarAnimation Enable="true"></ProgressBarAnimation>
+                                        </SfProgressBar>
+                                    </div>
+                                    <div class="row p-2">
+                                        <table>
+                                            <tr>
+                                                <td class="left-side">A processar...</td>
+                                                <td>:<span id='text' class="right-side">Total @maxProgres linhas</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="left-side">A inserir:</td>
+                                                <td>:<span id='text' class="right-side">@inserted</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="left-side">A atualizar:</td>
+                                                <td>:<span id='text' class="right-side">@updated</span></td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </Authorized>
+    <Authorizing>
+        <h1>Loading ...</h1>
+    </Authorizing>
+</AuthorizeView>
+@code{
+    SfSpinner SpinnerObj;
+    public List<BreadCrumbData> breadCrumbs = new List<BreadCrumbData>();
+
+    SfToast ToastError;
+    SfToast ToastOk;
+
+    private string ToastTitle = "";
+    private string ToastContent = "";
+
+    private List<ToastModel> Toast = new List<ToastModel>{
+        new ToastModel{ Title = "ERRO!", Content="Por favor selecione um ficheiro.", CssClass="e-toast-danger", Icon="e-error toast-icons" },
+        new ToastModel{ Title = "ERRO!", Content="Por favor selecione uma Unidade de handling.", CssClass="e-toast-danger", Icon="e-error toast-icons" },
+        new ToastModel{ Title = "ERRO!", Content="os cabeçalhos do ficheiro não coincidem.", CssClass="e-toast-danger", Icon="e-error toast-icons" }
+    };
+
+    int inserted { get; set; } = 0;
+    int updated { get; set; } = 0;
+    int progress { get; set; }
+    int maxProgres { get; set; }
+
+    public List<Uh> uhs { get; set; }
+    public List<Porta> portas { get; set; }
+    public List<Parametro> parametros { get; set; }
+    public List<AssistenciasPRM> assistenciasPRMs { get; set; }
+    public List<HistoricoAssistencia> historicoAssistencias { get; set; }
+    public List<DadosAeroporto> dadosAeroportos { get; set; }
+
+    public string[] assist = new string[] {
+            "Aeroporto", "Msg", "Notif", "Data", "Voo", "Mov","Orig Dest","Pax","SSR","AC","Stand","Exit","Ck In","Gate","Transferencia"
+        };
+
+    public string[] airportData = new string[] {
+            "Mov Type", "Registration", "Capacity", "Flight Nr", "Arrival Belt", "Gate", "Check In Counters", "Flight Destination",
+            "Flight Origin", "Estimated Date Time", "Schedule Date Time", "Actual Date Time", "Code Share", "Block Date Time", "Begin Boarding Date Time",
+            "End Boarding Date Time", "Service Type", "Exit Door", "Chute", "Gate Status", "Rotation Key", "Aircraft Type ICAO", "Vias IATA", "Stands",
+            "Remark", "Estimated Date Time UTC", "Schedule Date Time UTC", "Actual Date Time UTC", "Block Date Time UTC", "Begin Boarding Date Time UTC",
+            "End Boarding Date Time UTC", "Flight Type", "Classification"
+        };
+
+    public string[] historico = new string[] {
+        "Tipo Msg","Aeroporto","Notif","Data Voo","Hora Voo", "Data Contacto", "Hora Contacto",
+        "Data Inicio Assistencia", "Hora Inicio Assistencia", "Data Fim Assistencia","Hora Fim Assistencia","Voo","Mov","Orig Dest",
+        "Pax", "SSR", "AC", "Stand", "Exit", "Ck In","Gate","Transferencia","Equipamentos","Justificacao Incumprimento"
+    };
+
+    string Validate = "e-error";
+
+    bool fileSelected = false;
+    IBrowserFile myFile;
+    private string textValue { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        BreadCrumbData breadCrumb = new BreadCrumbData
+        {
+            Text = "Início",
+            Url = "/"
+        };
+        breadCrumbs.Add(breadCrumb);
+
+        breadCrumb = new BreadCrumbData
+        {
+            Text = "Upload Data",
+            Url = "/uploadData"
+        };
+        breadCrumbs.Add(breadCrumb);
+
+        uhs = await http.GetFromJsonAsync<List<Uh>>("api/uh");
+        portas = await http.GetFromJsonAsync<List<Porta>>("api/portas");
+        parametros = await http.GetFromJsonAsync<List<Parametro>>("api/parametros");
+    }
+
+    public Guid uhValue { get; set; } = Guid.Empty;
+
+    public void OnChange(Syncfusion.Blazor.DropDowns.ChangeEventArgs<Guid, Uh> args)
+    {
+        if (args.Value == Guid.Empty)
+        {
+            this.Validate = "e-error";
+        }
+        else
+        {
+            this.Validate = "e-success";
+        }
+
+        this.uhValue = args.ItemData.ID;
+    }
+
+    string myFileName = string.Empty;
+
+    private async Task OnFileSelection(InputFileChangeEventArgs e)
+    {
+        myFile = e.File;
+        var buffers = new byte[myFile.Size];
+        await myFile.OpenReadStream().ReadAsync(buffers);
+        string fileType = myFile.ContentType;
+        if (myFile.Size > 0)
+        {
+            fileSelected = true;
+        }
+    }
+
+    private async void ProcessFile()
+    {
+        bool uhSelected = (uhValue != Guid.Empty ? true : false);
+        if (!fileSelected || !uhSelected)
+        {
+            if (!fileSelected)
+            {
+                await this.ToastError.Show(Toast[0]);
+            }
+            if (!uhSelected)
+            {
+                await this.ToastError.Show(Toast[1]);
+            }
+            return;
+        }
+        else
+        {
+
+            var hasHeader = true;
+            MemoryStream ms = new MemoryStream();
+            await myFile.OpenReadStream().CopyToAsync(ms);
+            ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+
+            using ExcelPackage package = new ExcelPackage();
+            package.Load(ms);
+
+            //Lets Deal with first worksheet.(You may iterate here if dealing with multiple sheets)
+            var ws = package.Workbook.Worksheets[0];
+
+            //Get all details as DataTable -because Datatable make life easy :)
+            DataTable excelasTable = new DataTable();
+            foreach (var firstRowCell in ws.Cells[1, 1, 1, ws.Dimension.End.Column])
+            {
+                //Get colummn details
+                if (!string.IsNullOrEmpty(firstRowCell.Text))
+                {
+                    string firstColumn = string.Format("Column {0}", firstRowCell.Start.Column);
+                    excelasTable.Columns.Add(hasHeader ? firstRowCell.Text : firstColumn);
+                }
+            }
+            var startRow = hasHeader ? 2 : 1;
+            //Get row details
+            for (int rowNum = startRow; rowNum <= ws.Dimension.End.Row; rowNum++)
+            {
+                var wsRow = ws.Cells[rowNum, 1, rowNum, excelasTable.Columns.Count];
+                DataRow row = excelasTable.Rows.Add();
+                foreach (var cell in wsRow)
+                {
+                    row[cell.Start.Column - 1] = cell.Text;
+                }
+            }
+
+            string[] columnNames = excelasTable.Columns.Cast<DataColumn>()
+                                     .Select(x => x.ColumnName)
+                                     .ToArray();
+
+            Array.ForEach(columnNames, Console.WriteLine);
+
+            maxProgres = excelasTable.Rows.Count;
+
+            if (columnNames.SequenceEqual(assist))
+            {
+                Console.WriteLine("Ficheiro assistencias");
+                assistenciasPRMs = await http.GetFromJsonAsync<List<AssistenciasPRM>>("api/assistenciasPRM");
+
+                foreach (DataRow row in excelasTable.Rows)
+                {
+                    string aeroporto = row["Aeroporto"].ToString();
+                    string msg = row["Msg"].ToString();
+                    string notif = row["Notif"].ToString();
+                    DateTime data = CsToDateTime(row["Data"].ToString(), "yyyy-MM-dd HH:mm:ss");
+                    string voo = row["Voo"].ToString();
+                    string mov = row["Mov"].ToString();
+                    string origDest = row["Orig Dest"].ToString();
+                    string pax = row["Pax"].ToString();
+                    string ssr = row["SSR"].ToString();
+                    string ac = row["AC"].ToString();
+                    string stand = row["Stand"].ToString();
+
+                    if (string.IsNullOrEmpty(stand))
+                    {
+                        stand = "000";
+                    }
+
+                    string exit = row["Exit"].ToString();
+                    string ckin = row["Ck In"].ToString();
+                    string gate = row["Gate"].ToString();
+                    string transferencia = row["Transferencia"].ToString();
+                    DateTime horaEmbarque = data.AddMinutes(-BrdTime(gate));
+                    DateTime saidaStaging = data.AddMinutes(-StagingTime(gate));
+                    DateTime estimaApresentacao = data.AddMinutes(-EstimaTime(gate));
+                    Guid uhid = uhs.Where(x => x.IATA == row["Aeroporto"].ToString()).Select(i => i.ID).FirstOrDefault();
+
+                    AssistenciasPRM currentAssit = new()
+                    {
+                        Aeroporto = aeroporto,
+                        Msg = msg,
+                        Notif = notif,
+                        Data = data,
+                        Voo = voo,
+                        Mov = mov,
+                        OrigDest = origDest,
+                        Pax = pax,
+                        SSR = ssr,
+                        AC = ac,
+                        Stand = stand,
+                        Exit = exit,
+                        CkIn = ckin,
+                        Gate = gate,
+                        Transferencia = transferencia,
+                        HoraEmbarque = horaEmbarque,
+                        SaidaStaging = saidaStaging,
+                        EstimaApresentacao = estimaApresentacao,
+                        UhID = uhid
+                    };
+
+                    AssistenciasPRM exists = assistenciasPRMs.Where(d =>
+                        d.Aeroporto == currentAssit.Aeroporto &&
+                        d.Data.Date.Day == currentAssit.Data.Day &&
+                        d.Voo == currentAssit.Voo &&
+                        d.Mov == currentAssit.Mov &&
+                        d.Pax == currentAssit.Pax
+                        ).FirstOrDefault();
+
+                    if (exists != null)
+                    {
+                        currentAssit.ID = exists.ID;
+                        await http.PutAsJsonAsync("api/assistenciasPRM", currentAssit);
+                        updated += 1;
+                        progress += 1;
+                        Console.WriteLine("existem " + updated + " duplicados");
+                        base.StateHasChanged();
+                    }
+                    else
+                    {
+                        await http.PostAsJsonAsync("api/assistenciasPRM", currentAssit);
+                        inserted += 1;
+                        progress += 1;
+                        Console.WriteLine("foram inseridas " + inserted + " linhas");
+                        base.StateHasChanged();
+                    }
+
+                }
+
+                this.ToastTitle = "SUCESSO!";
+                this.ToastContent = "<h3>Ficheiro de assistências processado com sucesso!</h3>" +
+                    "<br /> Foram adicionados " + inserted + " registos!" +
+                    "<br /> Foram atualizadas " + updated + " entradas!";
+                await Task.Delay(1000);
+                await this.ToastOk.Show();
+                inserted = 0;
+                updated = 0;
+                progress = 0;
+                maxProgres = 0;
+                base.StateHasChanged();
+            }
+            else if (columnNames.SequenceEqual(historico))
+            {
+                Console.WriteLine("Ficheiro de histórico");
+                historicoAssistencias = await http.GetFromJsonAsync<List<HistoricoAssistencia>>("api/historicoAssistencias");
+
+                foreach (DataRow row in excelasTable.Rows)
+                {
+                    Guid uhid = uhValue;
+                    string msg = row["Tipo Msg"].ToString();
+                    string aeroporto = row["Aeroporto"].ToString();
+                    string notif = row["Notif"].ToString();
+                    string dataTemp = row["Data Voo"].ToString() + " " + row["Hora Voo"].ToString();
+                    DateTime data = CsToDateTime(dataTemp, "yyyy-MM-dd HH:mm:ss");
+                    string dataContactoTemp = row["Data Contacto"].ToString() + " " + row["Hora Contacto"].ToString();
+                    DateTime dataContacto = CsToDateTime(dataContactoTemp, "yyyy-MM-dd HH:mm:ss");
+                    string dataInicioTemp = row["Data Inicio Assistencia"].ToString() + " " + row["Hora Inicio Assistencia"].ToString();
+                    DateTime dataInicio = CsToDateTime(dataInicioTemp, "yyyy-MM-dd HH:mm:ss");
+                    string dataFimTemp = row["Data Fim Assistencia"].ToString() + " " + row["Hora Fim Assistencia"].ToString();
+                    DateTime dataFim = CsToDateTime(dataFimTemp, "yyyy-MM-dd HH:mm:ss");
+                    string voo = row["Voo"].ToString();
+                    string mov = row["Mov"].ToString();
+                    string origDest = row["Orig Dest"].ToString();
+                    string pax = row["Pax"].ToString();
+                    string ssr = row["SSR"].ToString();
+                    string ac = row["AC"].ToString();
+                    string stand = row["Stand"].ToString();
+                    string exit = row["Exit"].ToString();
+                    string ckin = row["Ck In"].ToString();
+                    string gate = row["Gate"].ToString();
+                    string trasnf = row["Transferencia"].ToString();
+                    string equip = row["Equipamentos"].ToString();
+                    string justif = row["Justificacao Incumprimento"].ToString();
+
+                    HistoricoAssistencia currentAssit = new()
+                    {
+                        UhID = uhid,
+                        Aeroporto = aeroporto,
+                        Msg = msg,
+                        Notif = notif,
+                        Data = data,
+                        DataContacto = dataContacto,
+                        DataInicio = dataInicio,
+                        DataFim = dataFim,
+                        Voo = voo,
+                        Mov = mov,
+                        OrigDest = origDest,
+                        Pax = pax,
+                        SSR = ssr,
+                        AC = ac,
+                        Stand = stand,
+                        Exit = exit,
+                        CkIn = ckin,
+                        Gate = gate,
+                        Transferencia = trasnf,
+                        Equipamentos = equip,
+                        Justificacao = justif
+                    };
+
+                    HistoricoAssistencia exists = historicoAssistencias.Where(d =>
+                        d.Aeroporto == currentAssit.Aeroporto &&
+                        d.Data.Date.Day == currentAssit.Data.Day &&
+                        d.Voo == currentAssit.Voo &&
+                        d.Mov == currentAssit.Mov &&
+                        d.Pax == currentAssit.Pax
+                    ).FirstOrDefault();
+
+                    if (exists != null)
+                    {
+                        currentAssit.ID = exists.ID;
+                        await http.PutAsJsonAsync("api/historicoAssistencias", currentAssit);
+                        updated += 1;
+                        progress += 1;
+                        Console.WriteLine("existem " + updated + " duplicados");
+                        base.StateHasChanged();
+                    }
+                    else
+                    {
+                        await http.PostAsJsonAsync("api/historicoAssistencias", currentAssit);
+                        inserted += 1;
+                        progress += 1;
+                        Console.WriteLine("foram inseridas " + inserted + " linhas");
+                        base.StateHasChanged();
+                    }
+
+                }
+
+                this.ToastTitle = "SUCESSO!";
+                this.ToastContent = "<h3>Ficheiro de histórico processado com sucesso!</h3>" +
+                    "<br /> Foram adicionados " + inserted + " registos!" +
+                    "<br /> Foram atualizadas " + updated + " entradas!";
+                await Task.Delay(1000);
+                await this.ToastOk.Show();
+                inserted = 0;
+                updated = 0;
+                progress = 0;
+                maxProgres = 0;
+                base.StateHasChanged();
+            }
+            else if (columnNames.SequenceEqual(airportData))
+            {
+                Console.WriteLine("ficheiro Arrivals");
+                dadosAeroportos = await http.GetFromJsonAsync<List<DadosAeroporto>>("api/dadosAeroporto");
+                foreach (DataRow row in excelasTable.Rows)
+                {
+                    Guid uhid = uhValue;
+                    string mov = row["Mov Type"].ToString();
+                    string reg = row["Registration"].ToString();
+                    string voo = row["Flight Nr"].ToString();
+                    DateTime? estimatedtime = CsToDateTime(row["Estimated Date Time"].ToString(), "yyyy-MM-dd HH:mm:ss");
+                    DateTime scheduletime = CsToDateTime(row["Schedule Date Time"].ToString(), "yyyy-MM-dd HH:mm:ss");
+                    DateTime? actualtime = CsToDateTime(row["Actual Date Time"].ToString(), "yyyy-MM-dd HH:mm:ss");
+                    DateTime? blocktime = CsToDateTime(row["Block Date Time"].ToString(), "yyyy-MM-dd HH:mm:ss");
+                    DateTime? beginbrd = CsToDateTime(row["Begin Boarding Date Time"].ToString(), "yyyy-MM-dd HH:mm:ss");
+                    DateTime? endbrd = CsToDateTime(row["End Boarding Date Time"].ToString(), "yyyy-MM-dd HH:mm:ss");
+                    DateTime? estimatedtimeutc = CsToDateTime(row["Estimated Date Time UTC"].ToString(), "yyyy-MM-dd HH:mm:ss");
+                    DateTime scheduletimeutc = CsToDateTime(row["Schedule Date Time UTC"].ToString(), "yyyy-MM-dd HH:mm:ss");
+                    DateTime? actualtimeutc = CsToDateTime(row["Actual Date Time UTC"].ToString(), "yyyy-MM-dd HH:mm:ss");
+                    DateTime? blocktimeutc = CsToDateTime(row["Block Date Time UTC"].ToString(), "yyyy-MM-dd HH:mm:ss");
+                    DateTime? beginbrdutc = CsToDateTime(row["Begin Boarding Date Time UTC"].ToString(), "yyyy-MM-dd HH:mm:ss");
+                    DateTime? endbrdutc = CsToDateTime(row["End Boarding Date Time UTC"].ToString(), "yyyy-MM-dd HH:mm:ss");
+
+                    DadosAeroporto currentData = new()
+                    {
+                        UhID = uhid,
+                        Mov = mov,
+                        Reg = reg,
+                        Voo = voo,
+                        EstimatedTime = estimatedtime,
+                        ScheduleTime = scheduletime,
+                        ActualTime = actualtime,
+                        BlockTime = blocktime,
+                        BeginBRD = beginbrd,
+                        EndBRD = endbrd,
+                        EstimatedTimeUTC = estimatedtimeutc,
+                        ScheduleTimeUTC = scheduletimeutc,
+                        ActualTimeUTC = actualtimeutc,
+                        BlockTimeUTC = blocktimeutc,
+                        BeginBRDUTC = beginbrdutc,
+                        EndBRDUTC = endbrdutc
+                    };
+
+                    DadosAeroporto exists = dadosAeroportos.Where(d =>
+                    d.UhID == currentData.UhID &&
+                    d.Mov == currentData.Mov &&
+                    d.Voo == currentData.Voo &&
+                    d.ScheduleTimeUTC.Day == currentData.ScheduleTimeUTC.Day
+
+                    ).FirstOrDefault();
+
+                    if (exists != null)
+                    {
+                        currentData.ID = exists.ID;
+                        await http.PutAsJsonAsync("api/dadosAeroporto", currentData);
+                        updated += 1;
+                        progress += 1;
+                        Console.WriteLine("existem " + updated + " duplicados");
+                        base.StateHasChanged();
+                    }
+                    else
+                    {
+                        await http.PostAsJsonAsync("api/dadosAeroporto", currentData);
+                        inserted += 1;
+                        progress += 1;
+                        Console.WriteLine("foram inseridas " + inserted + " linhas");
+                        base.StateHasChanged();
+                    }
+
+                }
+
+                this.ToastTitle = "SUCESSO!";
+                this.ToastContent = "<h3>Ficheiro processado com sucesso!</h3>" +
+                    "<br /> Foram adicionados " + inserted + " registos!" +
+                    "<br /> Foram atualizadas " + updated + " entradas!";
+                await Task.Delay(1000);
+                await this.ToastOk.Show();
+                inserted = 0;
+                updated = 0;
+                progress = 0;
+                maxProgres = 0;
+                base.StateHasChanged();
+            }
+            else
+            {
+                Console.WriteLine("os cabeçalhos do ficheiro não coincidem");
+
+                await this.ToastError.Show(Toast[2]);
+
+                return;
+            }
+            this.StateHasChanged();
+        }
+
+    }
+
+    private int BrdTime(string gate)
+    {
+        bool gateExist = portas.Any(g => g.PortaNum.Equals(gate));
+
+        if (gateExist)
+        {
+            Porta queryP = portas.FirstOrDefault(g => g.PortaNum.Equals(gate));
+
+            bool schengen = queryP.Schengen;
+            int tempoTotal = (schengen == true) ? 40 : 60;
+            return tempoTotal;
+        }
+        else
+        {
+            return 0;
+        }
+    }
+
+    private int StagingTime(string gate)
+    {
+        bool gateExist = portas.Any(g => g.PortaNum.Equals(gate));
+
+        if (gateExist)
+        {
+            Porta queryP = portas.FirstOrDefault(g => g.PortaNum.Equals(gate));
+
+            int portaTempo = queryP.PortaTempo;
+
+            bool schengen = queryP.Schengen;
+            int tempoTotal = (schengen == true) ? 40 + portaTempo : 60 + portaTempo;
+            return tempoTotal;
+        }
+        else
+        {
+            return 0;
+        }
+    }
+
+    private int EstimaTime(string gate)
+    {
+        bool gateExist = portas.Any(g => g.PortaNum.Equals(gate));
+
+        if (gateExist)
+        {
+            Porta queryPorta = portas.FirstOrDefault(g => g.PortaNum.Equals(gate));
+
+            bool schengen = queryPorta.Schengen;
+            string paramNome = (schengen == true) ? "CPS" : "CPN";
+
+            Parametro queryParam = parametros.FirstOrDefault(p => p.ParamNome.Equals(paramNome));
+            int tempoTotal = (int)queryParam.ParamValue;
+            return tempoTotal;
+        }
+        else
+        {
+            return 0;
+        }
+    }
+
+    private DateTime CsToDateTime(string str, string format)
+    {
+        CultureInfo ptPT = new CultureInfo("pt-PT");
+        if (String.IsNullOrEmpty(str) || str == " ")
+        {
+            DateTime dateTime = DateTime.ParseExact("1900-01-01 00:00:00", "yyyy-MM-dd HH:mm:ss", ptPT);
+            return dateTime;
+        }
+        else
+        {
+            DateTime dateTime = DateTime.ParseExact(str, format, ptPT);
+            return dateTime;
+        }
+    }
+
+}

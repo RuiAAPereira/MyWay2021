@@ -2,25 +2,39 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
+using Microsoft.AspNetCore.Identity;
 
 namespace MyWay2021.Server.Configuration
 {
     public class UserConfiguration : IEntityTypeConfiguration<AppUser>
     {
+        private const string adminId = "B22698B8-42A2-4115-9631-1C2D1E2AC5F7";
+
         public void Configure(EntityTypeBuilder<AppUser> builder)
         {
-            builder.HasData(
-                new AppUser
-                {
-                    Id = new Guid("ed3083c5-dada-44f6-8f3e-fec4c3c4477f").ToString(),
-                    Name = "Rui Pereira",
-                    UserName = "RaPereira",
-                    NormalizedUserName = "RAPEREIRA",
-                    PasswordHash = "AQAAAAEAACcQAAAAEK9oxRxsEji9BpEDLL5EwMNTFo3ZsVhz9hXDT+9sNzP9n1pQhQ55VzY7yt00BKRJeg==",
-                    Email = "rui.santos@portway.pt",
-                    NormalizedEmail = "RUI.SANTOS@PORTWAY.PT"
-                }
-            );
+            var admin = new AppUser
+            {
+                Id = adminId,
+                UserName = "rapereira",
+                NormalizedUserName = "RAPEREIRA",
+                Nome = "Rui Pereira",
+                Email = "rui.santos@portway.pt",
+                NormalizedEmail = "RUI.SANTOS@PORTWAY.PT",
+                PhoneNumber = "XXXXXXXXXXXXX",
+                EmailConfirmed = true,
+                PhoneNumberConfirmed = true,
+                SecurityStamp = new Guid().ToString("D")
+            };
+
+            admin.PasswordHash = PassGenerate(admin);
+
+            builder.HasData(admin);
+        }
+
+        public string PassGenerate(AppUser user)
+        {
+            var passHash = new PasswordHasher<AppUser>();
+            return passHash.HashPassword(user, "rui0504");
         }
     }
 }

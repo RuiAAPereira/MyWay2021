@@ -6658,15 +6658,6 @@ namespace MyWay2021.Client.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Ungroup by this column.
-        /// </summary>
-        public static string Grid_Ungroup {
-            get {
-                return ResourceManager.GetString("Grid_Ungroup", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Click here to ungroup.
         /// </summary>
         public static string Grid_UnGroupButton {

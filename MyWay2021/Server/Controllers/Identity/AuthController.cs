@@ -52,7 +52,7 @@ namespace MyWay2021.Server.Controllers.Identity
         {
             var user = new AppUser
             {
-                Name = parameters.Name,
+                Nome = parameters.Nome,
                 UserName = parameters.UserName,
                 Email = parameters.Email
             };
@@ -67,7 +67,7 @@ namespace MyWay2021.Server.Controllers.Identity
         {
             var user = await _userManager.FindByIdAsync(parameters.Id.ToString());
 
-            user.Name = parameters.Name;
+            user.Nome = parameters.Nome;
             user.UserName = parameters.UserName;
             user.Email = parameters.Email;
             if (parameters.Password != null)

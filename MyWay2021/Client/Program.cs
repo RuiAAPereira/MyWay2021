@@ -1,10 +1,10 @@
 using Blazored.Toast;
-using MyWay2021.Client.Services;
-using MyWay2021.Client.Shared;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
+using MyWay2021.Client.Services;
+using MyWay2021.Client.Shared;
 using Syncfusion.Blazor;
 using System;
 using System.Globalization;
@@ -19,7 +19,7 @@ namespace MyWay2021.Client
         {
             //Register Syncfusion license 
             Syncfusion.Licensing.SyncfusionLicenseProvider
-                .RegisterLicense("MzM0Njk0QDMxMzgyZTMzMmUzMEJqMXBFUXdLZncyZE9ZM1lHOVkzQ1IrR1dTTFlDNmFZckZEamh1enFwRGs9");
+                .RegisterLicense("NDUyMTgxQDMxMzkyZTMxMmUzME5QNFhMNUtlN1pWeUFYMWFaRVNnb29qam1jdnpxTEtCbUdRQUljbFFHS289");
 
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
 

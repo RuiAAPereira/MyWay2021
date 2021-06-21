@@ -1,0 +1,329 @@
+﻿@page "/analise"
+
+@using Syncfusion.Blazor.Inputs
+@using Syncfusion.Blazor.Buttons
+@using Syncfusion.Blazor.Grids
+@using Syncfusion.Blazor.Navigations
+@using MyWay2021.Shared.Models.Analise
+
+@inject IToastService toastService
+@inject HttpClient client
+@inject IJSRuntime js
+
+<AuthorizeView Context="authContext" Roles="@("Administrador")">
+    <Authorized>
+        <BreadCrumb breadCrumbs="breadCrumbs"></BreadCrumb>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12 col-md-8 col-lg-6">
+                    <h1>Olá @authContext.User.Identity.Name !!</h1>
+                    <p>Bem-Vindo.</p>
+
+                    <div>
+                        <SfUploader ID="UploadFiles" AutoUpload="true" AllowMultiple=false AllowedExtensions=".xls, .xlsx">
+                            <UploaderEvents Success="OnSuccess"></UploaderEvents>
+                            <UploaderAsyncSettings SaveUrl="api/fileupload/Save" RemoveUrl="api/fileupload/Remove">
+                            </UploaderAsyncSettings>
+                        </SfUploader>
+                    </div>
+                    <br />
+                    <br />
+                    <br />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12 col-md-12 col-lg-12">
+                    @if (voosCriticosHoje != null)
+                    {
+                        if (voosCriticosHoje.Count == 0)
+                        {
+                            <text>Não foram encontrados registos na base de dados</text>
+                        }
+                        else
+                        {
+                            <text>Foram encontrados @voosCriticosHoje.Count registos na base de dados</text>
+                        }
+                    }
+
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12 col-md-12 col-lg-12">
+                    <SfCard ID="Funcoes">
+                        <CardHeader Title="Assistências" />
+                        <CardContent>
+                            <SpinLoader IsLoading="@(listaAssistencias== null)">
+                                <LoadingTemplate>
+                                    <div class="modal-overlay">
+                                        <Chase Color="#ff0000" Size="60px" Center="true" />
+                                    </div>
+                                </LoadingTemplate>
+                                <ContentTemplate>
+                                    @if (listaAssistencias.Count == 0)
+                                    {
+                                        <text>Não foram encontrados registos na base de dados</text>
+                                    }
+                                    else
+                                    {
+                                        <SfButton OnClick="ExcelExport" IconCss="e-icons e-export_excel" IconPosition="IconPosition.Left" Content="Excel"></SfButton>
+                                        <br />
+                                        <br />
+                                        <SfGrid @ref="DefaultGridHoje" TValue="AssistenciasPRM" DataSource="@listaAssistenciasHoje" Toolbar="@(new List<string>() { "Search" })"
+                                                AllowExcelExport="true" AllowFiltering="true" AllowPaging="true">
+                                            <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
+                                            <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false"></GridEditSettings>
+                                            <GridPageSettings PageCount="25"></GridPageSettings>
+                                            <GridColumns>
+                                                <GridColumn HeaderText="Menu" Width="160" TextAlign="TextAlign.Center" AllowFiltering="false">
+                                                    <Template>
+                                                        @{
+                                                            var formando = (context as AssistenciasPRM);
+                                                        }
+                                                        @*<span class="d-inline-block" tabindex="0" data-toggle="tooltip" data-placement="top"
+                                                                  title="Editar colaborador">
+                                                                <button type="button" class="btn btn-info"
+                                                                        data-toggle="modal" data-target="#formandoModal"
+                                                                        @onclick="@(() => PrepareForEdit(formando))">
+                                                                    <i class="fas fa-edit"></i>
+                                                                </button>
+                                                            </span>
+                                                            <span class="d-inline-block" tabindex="0" data-toggle="tooltip" data-placement="top"
+                                                                  title="Apagar colaborador">
+                                                                <button type="button" class="btn btn-danger"
+                                                                        data-toggle="modal" data-target="#confirmDeleteModal"
+                                                                        @onclick="@(() => PrepareForDelete(formando.ID))">
+                                                                    <i class="fas fa-trash-alt"></i>
+                                                                </button>
+                                                            </span>*@
+                                                    </Template>
+                                                </GridColumn>
+                                                <GridColumn Field=@nameof(AssistenciasPRM.ID) TextAlign="TextAlign.Right"
+                                                            Visible="false" IsPrimaryKey="true"></GridColumn>
+                                                <GridColumn Field=@nameof(AssistenciasPRM.Aeroporto) HeaderText="Aeroporto"></GridColumn>
+                                                <GridColumn Field=@nameof(AssistenciasPRM.Msg) HeaderText="Msg"></GridColumn>
+                                                <GridColumn Field=@nameof(AssistenciasPRM.Notif) HeaderText="Notif"></GridColumn>
+                                                <GridColumn Field=@nameof(AssistenciasPRM.Data) HeaderText="Data"></GridColumn>
+                                                <GridColumn Field=@nameof(AssistenciasPRM.Voo) HeaderText=" Voo"></GridColumn>
+                                                <GridColumn Field=@nameof(AssistenciasPRM.OrigDest) HeaderText=" Orig/Dest"></GridColumn>
+                                                <GridColumn Field=@nameof(AssistenciasPRM.Pax) HeaderText=" PAX"></GridColumn>
+                                                <GridColumn Field=@nameof(AssistenciasPRM.SSR) HeaderText=" SSR"></GridColumn>
+                                                <GridColumn Field=@nameof(AssistenciasPRM.AC) HeaderText=" AC"></GridColumn>
+                                                <GridColumn Field=@nameof(AssistenciasPRM.Stand) HeaderText="Stand"></GridColumn>
+                                                <GridColumn Field=@nameof(AssistenciasPRM.Exit) HeaderText=" Saída"></GridColumn>
+                                                <GridColumn Field=@nameof(AssistenciasPRM.CkIn) HeaderText=" CkIn"></GridColumn>
+                                                <GridColumn Field=@nameof(AssistenciasPRM.Gate) HeaderText=" Porta"></GridColumn>
+                                                <GridColumn Field=@nameof(AssistenciasPRM.Transferencia) HeaderText=" Transferência"></GridColumn>
+                                            </GridColumns>
+                                        </SfGrid>
+                                    }
+                                </ContentTemplate>
+                                <FaultedContentTemplate>
+                                    <text>ERRO! Por favor contacte o administrador do sistema!</text>
+                                </FaultedContentTemplate>
+                            </SpinLoader>
+                        </CardContent>
+                        <CardFooter>
+                            <CardFooterContent>
+                                @*<span class="d-inline-block" tabindex="0" data-toggle="tooltip" data-placement="top"
+                                          title="Criar nova unidade de handling">
+                                        <button type="button" class="btn btn-success"
+                                                data-toggle="modal" data-target="#uhModal"
+                                                @onclick="@(() => PrepareToAdd())">
+                                            <i class="fas fa-plus"></i>&nbsp;Criar
+                                        </button>
+                                    </span>*@
+                            </CardFooterContent>
+                        </CardFooter>
+                    </SfCard>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12 col-md-12 col-lg-12">
+                    <SfCard ID="Funcoes">
+                        <CardHeader Title="Assistências" />
+                        <CardContent>
+                            <SpinLoader IsLoading="@(listaAssistencias== null)">
+                                <LoadingTemplate>
+                                    <div class="modal-overlay">
+                                        <Chase Color="#ff0000" Size="60px" Center="true" />
+                                    </div>
+                                </LoadingTemplate>
+                                <ContentTemplate>
+                                    @if (listaAssistencias.Count == 0)
+                                    {
+                                        <text>Não foram encontrados registos na base de dados</text>
+                                    }
+                                    else
+                                    {
+                                        <SfButton OnClick="ExcelExport" IconCss="e-icons e-export_excel" IconPosition="IconPosition.Left" Content="Excel"></SfButton>
+                                        <br />
+                                        <br />
+                                        <SfGrid @ref="DefaultGrid" TValue="AssistenciasPRM" DataSource="@listaAssistencias" Toolbar="@(new List<string>() { "Search" })"
+                                                AllowExcelExport="true" AllowFiltering="true" AllowPaging="true">
+                                            <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
+                                            <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false"></GridEditSettings>
+                                            <GridPageSettings PageCount="25"></GridPageSettings>
+                                            <GridColumns>
+                                                <GridColumn HeaderText="Menu" Width="160" TextAlign="TextAlign.Center" AllowFiltering="false">
+                                                    <Template>
+                                                        @{
+                                                            var formando = (context as AssistenciasPRM);
+                                                        }
+                                                        @*<span class="d-inline-block" tabindex="0" data-toggle="tooltip" data-placement="top"
+                                                                  title="Editar colaborador">
+                                                                <button type="button" class="btn btn-info"
+                                                                        data-toggle="modal" data-target="#formandoModal"
+                                                                        @onclick="@(() => PrepareForEdit(formando))">
+                                                                    <i class="fas fa-edit"></i>
+                                                                </button>
+                                                            </span>
+                                                            <span class="d-inline-block" tabindex="0" data-toggle="tooltip" data-placement="top"
+                                                                  title="Apagar colaborador">
+                                                                <button type="button" class="btn btn-danger"
+                                                                        data-toggle="modal" data-target="#confirmDeleteModal"
+                                                                        @onclick="@(() => PrepareForDelete(formando.ID))">
+                                                                    <i class="fas fa-trash-alt"></i>
+                                                                </button>
+                                                            </span>*@
+                                                    </Template>
+                                                </GridColumn>
+                                                <GridColumn Field=@nameof(AssistenciasPRM.ID) TextAlign="TextAlign.Right"
+                                                            Visible="false" IsPrimaryKey="true"></GridColumn>
+                                                <GridColumn Field=@nameof(AssistenciasPRM.Aeroporto) HeaderText="Aeroporto"></GridColumn>
+                                                <GridColumn Field=@nameof(AssistenciasPRM.Msg) HeaderText="Msg"></GridColumn>
+                                                <GridColumn Field=@nameof(AssistenciasPRM.Notif) HeaderText="Notif"></GridColumn>
+                                                <GridColumn Field=@nameof(AssistenciasPRM.Data) HeaderText="Data"></GridColumn>
+                                                <GridColumn Field=@nameof(AssistenciasPRM.Voo) HeaderText=" Voo"></GridColumn>
+                                                <GridColumn Field=@nameof(AssistenciasPRM.OrigDest) HeaderText=" Orig/Dest"></GridColumn>
+                                                <GridColumn Field=@nameof(AssistenciasPRM.Pax) HeaderText=" PAX"></GridColumn>
+                                                <GridColumn Field=@nameof(AssistenciasPRM.SSR) HeaderText=" SSR"></GridColumn>
+                                                <GridColumn Field=@nameof(AssistenciasPRM.AC) HeaderText=" AC"></GridColumn>
+                                                <GridColumn Field=@nameof(AssistenciasPRM.Stand) HeaderText="Stand"></GridColumn>
+                                                <GridColumn Field=@nameof(AssistenciasPRM.Exit) HeaderText=" Saída"></GridColumn>
+                                                <GridColumn Field=@nameof(AssistenciasPRM.CkIn) HeaderText=" CkIn"></GridColumn>
+                                                <GridColumn Field=@nameof(AssistenciasPRM.Gate) HeaderText=" Porta"></GridColumn>
+                                                <GridColumn Field=@nameof(AssistenciasPRM.Transferencia) HeaderText=" Transferência"></GridColumn>
+                                            </GridColumns>
+                                        </SfGrid>
+                                    }
+                                </ContentTemplate>
+                                <FaultedContentTemplate>
+                                    <text>ERRO! Por favor contacte o administrador do sistema!</text>
+                                </FaultedContentTemplate>
+                            </SpinLoader>
+                        </CardContent>
+                        <CardFooter>
+                            <CardFooterContent>
+                                @*<span class="d-inline-block" tabindex="0" data-toggle="tooltip" data-placement="top"
+                                          title="Criar nova unidade de handling">
+                                        <button type="button" class="btn btn-success"
+                                                data-toggle="modal" data-target="#uhModal"
+                                                @onclick="@(() => PrepareToAdd())">
+                                            <i class="fas fa-plus"></i>&nbsp;Criar
+                                        </button>
+                                    </span>*@
+                            </CardFooterContent>
+                        </CardFooter>
+                    </SfCard>
+                </div>
+            </div>
+        </div>
+    </Authorized>
+    <Authorizing>
+        <h1>Loading ...</h1>
+    </Authorizing>
+</AuthorizeView>
+
+
+<style>
+    .e-export_excel:before {
+        content: '\e74e';
+    }
+</style>
+
+@code {
+    private SfGrid<AssistenciasPRM> DefaultGridHoje;
+    private SfGrid<AssistenciasPRM> DefaultGrid;
+    public List<BreadCrumbData> breadCrumbs = new List<BreadCrumbData>();
+    List<AssistenciasPRM> listaAssistencias { get; set; }
+    List<AssistenciasPRM> listaAssistenciasHoje { get; set; }
+    List<VoosCriticos> voosCriticosHoje = new List<VoosCriticos>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        BreadCrumbData breadCrumb = new BreadCrumbData
+        {
+            Text = "Início",
+            Url = "/"
+        };
+        breadCrumbs.Add(breadCrumb);
+
+        await FillData();
+    }
+
+    public async Task FillData()
+    {
+        listaAssistencias = await client.GetFromJsonAsync<List<AssistenciasPRM>>("api/AssistenciasPRM");
+        //listaAssistenciasHoje = await client.GetFromJsonAsync<List<AssistenciasPRM>>("api/AssistenciasPRM/GetHoje");
+
+        listaAssistenciasHoje = listaAssistencias.Where(u => u.Data.Day == DateTime.UtcNow.Day).ToList();
+
+        var temp = listaAssistenciasHoje.GroupBy(v => v.Voo).Where(c => c.Count() >= 2)
+                  .Select(v => new
+                  {
+                      Horario = listaAssistenciasHoje.Where(d => d.Voo == v.Key).Select(d => d.Data).FirstOrDefault(),
+                      Mov = listaAssistenciasHoje.Where(d => d.Voo == v.Key).Select(d => d.Mov).FirstOrDefault(),
+                      Od = listaAssistenciasHoje.Where(d => d.Voo == v.Key).Select(d => d.OrigDest).FirstOrDefault(),
+                      Num = v.Key,
+                      Conta = v.Count()
+                  }
+                  ).OrderBy(h => h.Horario).ToList();
+
+        foreach (var item in temp)
+        {
+            VoosCriticos criticos = new VoosCriticos
+            {
+                Horario = item.Horario,
+                Mov = item.Mov,
+                Od = item.Od,
+                Num = item.Num,
+                Conta = item.Conta
+            };
+
+            voosCriticosHoje.Add(criticos);
+        }
+
+        //voosCriticosHoje = await client.GetFromJsonAsync<List<VoosCriticosHoje>>("api/AssistenciasPRM/GetVoosCriticosHoje");
+        StateHasChanged();
+    }
+
+    public async void OnSuccess(SuccessEventArgs args)
+    {
+        var customHeader = args.Response.Headers.Split(new Char[] { '\n' })[1]; // To split the response header values
+        var key = customHeader.Split(new Char[] { ':' })[0]; // To get the key pair of provided custom data in header
+        var value = customHeader.Split(new Char[] { ':' })[1].Trim(); // To get the value for the key pair of provided custom data in header
+
+        if (key == "registos")
+        {
+            await Task.Delay(100);
+            toastService.ShowSuccess(value, "Sucesso!");
+        }
+
+        await FillData();
+    }
+
+    public async Task ExcelExport()
+    {
+        await this.DefaultGrid.ExcelExport();
+    }
+
+    public class VoosCriticos
+    {
+        public string Aeroporto { get; set; }
+        public DateTime Horario { get; set; }
+        public string Mov { get; set; }
+        public string Od { get; set; }
+        public string Num { get; set; }
+        public int Conta { get; set; }
+    }
+}

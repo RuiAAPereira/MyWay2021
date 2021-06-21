@@ -64,7 +64,7 @@
                                                             </span>
                                                         </td>
                                                         <td>@user.UserName</td>
-                                                        <td>@user.Name</td>
+                                                        <td>@user.Nome</td>
                                                         <td>@user.Email</td>
                                                         <td>
                                                             @{var listRoles = userRoles.Where(i => i.UserId == user.Id);}
@@ -193,7 +193,7 @@
 
     private void PrepareForDelete(RegisterUser user)
     {
-        itemToDelete = user.Name;
+        itemToDelete = user.Nome;
         UserToDelete = user.Id;
     }
 

@@ -4,7 +4,7 @@
 @inject HttpClient client
 @inject IJSRuntime js
 
-<AuthorizeView Context="authContext" Roles="@("Admin")">
+<AuthorizeView Context="authContext" Roles="@("Administrador")">
     <Authorized>
         <BreadCrumb breadCrumbs="breadCrumbs"></BreadCrumb>
         <div class="container-fluid">
@@ -32,6 +32,8 @@
                                                     <th scope="col">Menu</th>
                                                     <th scope="col">Nome</th>
                                                     <th scope="col">IATA</th>
+                                                    <th scope="col">Cod.</th>
+                                                    <th scope="col">Aeroporto</th>
                                                     @if (@authContext.User.IsInRole("temp")) //substituir por Admins
                                                     {
                                                         <th scope="col">Criado em:</th>
@@ -44,35 +46,37 @@
                                             <tbody>
                                                 @foreach (Uh uh in uhs)
                                                 {
-                                                    <tr>
-                                                        <td width="120px" align="center">
-                                                            <span class="d-inline-block" tabindex="0" data-toggle="tooltip" data-placement="top"
-                                                                  title="Editar unidade de handling">
-                                                                <button type="button" class="btn btn-info"
-                                                                        data-toggle="modal" data-target="#uhModal"
-                                                                        @onclick="@(() => PrepareForEdit(uh))">
-                                                                    <i class="fas fa-edit"></i>
-                                                                </button>
-                                                            </span>
-                                                            <span class="d-inline-block" tabindex="0" data-toggle="tooltip" data-placement="top"
-                                                                  title="Apagar unidade de handling">
-                                                                <button type="button" class="btn btn-danger"
-                                                                        data-toggle="modal" data-target="#confirmDeleteModal"
-                                                                        @onclick="@(() => PrepareForDelete(uh.ID))">
-                                                                    <i class="fas fa-trash-alt"></i>
-                                                                </button>
-                                                            </span>
-                                                        </td>
-                                                        <td>@uh.Nome</td>
-                                                        <td>@uh.IATA</td>
-                                                        @if (@authContext.User.IsInRole("temp")) //substituir por Admins
-                                                        {
-                                                            <td>@uh.CreatedAt</td>
-                                                            <td>@uh.CreatedBy</td>
-                                                            <td>@uh.LastUpdatedAt</td>
-                                                            <td>@uh.LastUpdatedBy</td>
-                                                        }
-                                                    </tr>
+                                                <tr>
+                                                    <td width="120px" align="center">
+                                                        <span class="d-inline-block" tabindex="0" data-toggle="tooltip" data-placement="top"
+                                                              title="Editar unidade de handling">
+                                                            <button type="button" class="btn btn-info"
+                                                                    data-toggle="modal" data-target="#uhModal"
+                                                                    @onclick="@(() => PrepareForEdit(uh))">
+                                                                <i class="fas fa-edit"></i>
+                                                            </button>
+                                                        </span>
+                                                        <span class="d-inline-block" tabindex="0" data-toggle="tooltip" data-placement="top"
+                                                              title="Apagar unidade de handling">
+                                                            <button type="button" class="btn btn-danger"
+                                                                    data-toggle="modal" data-target="#confirmDeleteModal"
+                                                                    @onclick="@(() => PrepareForDelete(uh.ID))">
+                                                                <i class="fas fa-trash-alt"></i>
+                                                            </button>
+                                                        </span>
+                                                    </td>
+                                                    <td>@uh.Nome</td>
+                                                    <td>@uh.IATA</td>
+                                                    <td>@uh.CodAeroporto</td>
+                                                    <td>@uh.NomeAeroporto</td>
+                                                    @if (@authContext.User.IsInRole("temp")) //substituir por Admins
+                                                    {
+                                                        <td>@uh.CreatedAt</td>
+                                                        <td>@uh.CreatedBy</td>
+                                                        <td>@uh.LastUpdatedAt</td>
+                                                        <td>@uh.LastUpdatedBy</td>
+                                                    }
+                                                </tr>
                                                 }
 
                                             </tbody>
