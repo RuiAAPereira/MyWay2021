@@ -45,7 +45,8 @@ namespace MyWay2021.Server.Data
         //public DbSet<Supervisor> Supervisores { get; set; }
         #endregion
         #region Set DbSet Colaboradores
-        //public DbSet<Colaborador> Colaboradores { get; set; }
+        public DbSet<Colaborador> Colaboradores { get; set; }
+        public DbSet<FormacaoConcluida> FormacoesConcluidas { get; set; }
         //public DbSet<DadosPessoais> DadosPessoais { get; set; }
         //public DbSet<Email> Emails { get; set; }
         //public DbSet<Observacao> Observacoes { get; set; }
@@ -68,7 +69,7 @@ namespace MyWay2021.Server.Data
         //public DbSet<Departamento> Departamentos { get; set; }
         //public DbSet<Equipa> Equipas { get; set; }
         //public DbSet<Formador> Formadores { get; set; }
-        public DbSet<Formando> Formandos { get; set; }
+        //public DbSet<Formando> Formandos { get; set; }
         public DbSet<Funcao> Funcoes { get; set; }
         //public DbSet<Horario> Horarios { get; set; }
         public DbSet<Justificacao> Justificacoes { get; set; }
@@ -82,6 +83,7 @@ namespace MyWay2021.Server.Data
         public DbSet<TipoMensagem> TiposMensagem { get; set; }
         public DbSet<TipoVoo> TipoVoos { get; set; }
         public DbSet<Uh> Uhs { get; set; }
+        public DbSet<Curso> Cursos { get; set; }
         #endregion
 
         protected override void OnModelCreating(ModelBuilder builder)

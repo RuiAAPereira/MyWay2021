@@ -119,7 +119,8 @@
 </AuthorizeView>
 
 @code {
-    SfTab Tab;
+        SfTab Tab;
+    private bool validDay { get; set; }
     private RelatorioDiario ModelRelatorio { get; set; } = new RelatorioDiario();
     public Equipamento ModelEquipamento { get; set; }
     public Incumprimento ModelIncumprimento { get; set; }
@@ -161,12 +162,12 @@
         uhs = await http.GetFromJsonAsync<List<Uh>>("api/uh");
     }
 
-    private async void HandleRelatorioValidSubmit()
+    private void HandleRelatorioValidSubmit()
     {
         //if (Model.RelatorioID == Guid.Empty)
         //{
-        //    await http.PostAsJsonAsync("api/relatorio", Relatorio);
-        //    toastService.ShowSuccess("Função adicionada com sucesso", "Sucesso!");
+        //await http.PostAsJsonAsync("api/relatorio", Relatorio);
+        //toastService.ShowSuccess("Função adicionada com sucesso", "Sucesso!");
         //}
         //else
         //{
@@ -177,7 +178,6 @@
 
     public void ValidateRelatorio()
     {
-        bool validDay = true;
         if (ModelRelatorio.Dia < DateTime.UtcNow.AddMonths(-1))
         {
             validDay = false;

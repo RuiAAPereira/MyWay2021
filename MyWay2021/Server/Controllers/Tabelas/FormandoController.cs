@@ -17,19 +17,19 @@ namespace MyWay2021.Server.Controllers.Tabelas
             this._db = context;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> Get()
-        {
-            var formando = await _db.Formandos.ToListAsync();
-            return Ok(formando);
-        }
+        //[HttpGet]
+        //public async Task<IActionResult> Get()
+        //{
+        //    var formando = await _db.Formandos.ToListAsync();
+        //    return Ok(formando);
+        //}
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> Get(Guid id)
-        {
-            var formando = await _db.Formandos.FirstOrDefaultAsync(a => a.ID == id);
-            return Ok(formando);
-        }
+        //[HttpGet("{id}")]
+        //public async Task<IActionResult> Get(Guid id)
+        //{
+        //    var formando = await _db.Formandos.FirstOrDefaultAsync(a => a.ID == id);
+        //    return Ok(formando);
+        //}
 
         [HttpPost]
         public async Task<IActionResult> Post(Formando formando)

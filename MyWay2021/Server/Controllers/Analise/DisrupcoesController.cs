@@ -6,6 +6,7 @@ using MyWay2021.Server.Models.Identity;
 using MyWay2021.Shared.Models.Analise;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -27,8 +28,9 @@ namespace MyWay2021.Server.Controllers.Analise
         [HttpGet]
         public async Task<IActionResult> GetData(Guid uhID, string timeinicio, string timefim)
         {
-            DateTime datainicio = DateTime.Parse(timeinicio);
-            DateTime datafim = DateTime.Parse(timefim);
+            var cultureInfo = new CultureInfo("pt-PT");
+            DateTime datainicio = DateTime.Parse(timeinicio, cultureInfo);
+            DateTime datafim = DateTime.Parse(timefim, cultureInfo);
             List<Guid> uhs = new List<Guid>();
 
             if (uhID == Guid.Empty)
