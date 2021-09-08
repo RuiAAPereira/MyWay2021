@@ -17,6 +17,8 @@ namespace MyWay2021.Shared.Models.Analise
         [Display(Name = "Voo:")]
         public string Voo { get; set; }
 
+        public string Stand { get; set; }
+
         [Display(Name = "ETD/ETA:")]
         public DateTime? EstimatedTime { get; set; }
         [Display(Name = "STD/STA:")]

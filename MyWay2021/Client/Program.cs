@@ -19,7 +19,7 @@ namespace MyWay2021.Client
         {
             //Register Syncfusion license 
             Syncfusion.Licensing.SyncfusionLicenseProvider
-                .RegisterLicense("NDUyMTgxQDMxMzkyZTMxMmUzME5QNFhMNUtlN1pWeUFYMWFaRVNnb29qam1jdnpxTEtCbUdRQUljbFFHS289");
+                .RegisterLicense("NDkxMzUwQDMxMzkyZTMyMmUzMFZLamVNWC9tZXJXaVltSlNnN3BqNDhsMFlnVWZRNjNBTnIyR1lJbnAzb1k9");
 
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
 

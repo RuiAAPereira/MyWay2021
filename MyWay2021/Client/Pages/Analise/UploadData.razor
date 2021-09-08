@@ -456,6 +456,7 @@
                     string mov = row["Mov Type"].ToString();
                     string reg = row["Registration"].ToString();
                     string voo = row["Flight Nr"].ToString();
+                    string stands = row["Stands"].ToString();
                     DateTime? estimatedtime = CsToDateTime(row["Estimated Date Time"].ToString(), "yyyy-MM-dd HH:mm:ss");
                     DateTime scheduletime = CsToDateTime(row["Schedule Date Time"].ToString(), "yyyy-MM-dd HH:mm:ss");
                     DateTime? actualtime = CsToDateTime(row["Actual Date Time"].ToString(), "yyyy-MM-dd HH:mm:ss");
@@ -475,6 +476,7 @@
                         Mov = mov,
                         Reg = reg,
                         Voo = voo,
+                        Stand= stands,
                         EstimatedTime = estimatedtime,
                         ScheduleTime = scheduletime,
                         ActualTime = actualtime,

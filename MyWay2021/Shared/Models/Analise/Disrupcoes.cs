@@ -8,6 +8,7 @@ namespace MyWay2021.Shared.Models.Analise
     {
         public string Nome { get; set; }
         public int Total { get; set; }
+        public string Percentagem { get; set; }
         public string Color { get; set; }
         public string Icon { get; set; }
         public string BgColor { get; set; }

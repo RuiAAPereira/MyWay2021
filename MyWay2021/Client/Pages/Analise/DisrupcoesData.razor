@@ -64,6 +64,12 @@
                                             <SfButton CssClass="e-primary" @onclick="ProcessFile">Filtrar</SfButton>
                                         </div>
                                     </div>
+                                    <div class="row p-2">
+                                        <SfSlider @bind-Value="@sliderValue" Step="5" Max="30">
+                                            <SliderTicks Placement="Placement.After" ShowSmallTicks="true" LargeStep="15" SmallStep="5"></SliderTicks>
+                                            @*<SliderTooltip IsVisible="true" ShowOn="TooltipShowOn.Auto" Placement="TooltipPlacement.Before"></SliderTooltip>*@
+                                        </SfSlider>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -76,6 +82,10 @@
                                     <div class="info-box-content">
                                         <span class="info-box-text">@item.Nome</span>
                                         <span class="info-box-number">@item.Total</span>
+                                        @if (item.Percentagem != string.Empty)
+                                        {
+                                            <small>@item.Percentagem</small>
+                                        }
                                     </div>
                                     <!-- /.info-box-content -->
                                 </div>
@@ -164,6 +174,8 @@
     SfToast ToastError;
 
     string Message = "";
+
+    int sliderValue = 15;
 
     public Guid uhValue { get; set; } = Guid.Empty;
     string Validate = "e-error";

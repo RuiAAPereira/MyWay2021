@@ -55,28 +55,28 @@
                             <div class="col-md-6 col-sm-6 col-xs-12">
                                 @if (maxProgres > 0)
                                 {
-                                <div class="row p-2">
-                                    <SfProgressBar Type="ProgressType.Linear" Value="@progress" Height="100"
-                                                   Minimum="0" Maximum="@maxProgres" ShowProgressValue="true">
-                                        <ProgressBarAnimation Enable="true"></ProgressBarAnimation>
-                                    </SfProgressBar>
-                                </div>
-                                <div class="row p-2">
-                                    <table>
-                                        <tr>
-                                            <td class="left-side">A processar...</td>
-                                            <td>:<span id='text' class="right-side">Total @maxProgres linhas</span></td>
-                                        </tr>
-                                        <tr>
-                                            <td class="left-side">A inserir:</td>
-                                            <td>:<span id='text' class="right-side">@inserted</span></td>
-                                        </tr>
-                                        <tr>
-                                            <td class="left-side">A atualizar:</td>
-                                            <td>:<span id='text' class="right-side">@updated</span></td>
-                                        </tr>
-                                    </table>
-                                </div>
+                                    <div class="row p-2">
+                                        <SfProgressBar Type="ProgressType.Linear" Value="@progress" Height="100"
+                                                       Minimum="0" Maximum="@maxProgres" ShowProgressValue="true">
+                                            <ProgressBarAnimation Enable="true"></ProgressBarAnimation>
+                                        </SfProgressBar>
+                                    </div>
+                                    <div class="row p-2">
+                                        <table>
+                                            <tr>
+                                                <td class="left-side">A processar...</td>
+                                                <td>:<span id='text' class="right-side">Total @maxProgres linhas</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="left-side">A inserir:</td>
+                                                <td>:<span id='text' class="right-side">@inserted</span></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="left-side">A atualizar:</td>
+                                                <td>:<span id='text' class="right-side">@updated</span></td>
+                                            </tr>
+                                        </table>
+                                    </div>
                                 }
                             </div>
                         </div>
@@ -107,7 +107,7 @@
                 new ToastModel{ Title = "ERRO!", Content="Por favor selecione um ficheiro.", CssClass="e-toast-danger", Icon="e-error toast-icons" },
                 new ToastModel{ Title = "ERRO!", Content="Por favor selecione uma Unidade de handling.", CssClass="e-toast-danger", Icon="e-error toast-icons" },
                 new ToastModel{ Title = "ERRO!", Content="os cabeçalhos do ficheiro não coincidem.", CssClass="e-toast-danger", Icon="e-error toast-icons" }
-            };
+                    };
 
     int inserted { get; set; } = 0;
     int updated { get; set; } = 0;
@@ -115,13 +115,17 @@
     int maxProgres { get; set; }
 
     public List<Uh>
-        uhs { get; set; }
+        uhs
+    { get; set; }
     public List<Curso>
-        cursos { get; set; }
+        cursos
+    { get; set; }
     public List<Colaborador>
-        colaboradores { get; set; }
+        colaboradores
+    { get; set; }
     public List<FormacaoConcluida>
-        acoes { get; set; }
+        acoes
+    { get; set; }
 
     public string[] formacoesFile = new string[] {
                                 "Formando","Curso","Acção","Empresa","Nº funcionário", "Departamento", "Categoria",
@@ -251,14 +255,16 @@
                 acoes = await http.GetFromJsonAsync<List<FormacaoConcluida>>("api/formacaoConcluida");
                 colaboradores = await http.GetFromJsonAsync<List<Colaborador>>("api/colaborador");
 
+                int i = 0;
+
                 foreach (DataRow row in excelasTable.Rows)
                 {
                     Console.WriteLine(" ");
-                    string formando = row["Formando"].ToString();
+                    string formando = RemoveDiacritics(row["Formando"].ToString());
                     Console.WriteLine(formando);
                     string curso = row["Curso"].ToString();
                     Console.WriteLine(curso);
-                    int numPw = int.Parse(row["Nº funcionário"].ToString());
+                    string numPw = row["Nº funcionário"].ToString().Trim();
                     Console.WriteLine(numPw);
                     string dep = row["Departamento"].ToString();
                     Console.WriteLine(dep);
@@ -270,15 +276,15 @@
                     Console.WriteLine(dataInicio);
                     DateTime dataFim = CsToDateTime(row["Data fim acção"].ToString());
                     Console.WriteLine(dataFim);
-                    int totalH = int.Parse(row["Nº total de horas da acção"].ToString());
-                    Console.WriteLine(totalH);
-                    double numH = double.Parse(row["Nº de horas frequentadas pelo formando"].ToString());
-                    Console.WriteLine(numH);
+                    //int totalH = int.Parse(row["Nº total de horas da acção"].ToString());
+                    //Console.WriteLine(totalH);
+                    //double numH = double.Parse(row["Nº de horas frequentadas pelo formando"].ToString());
+                    //Console.WriteLine(numH);
 
-                    Guid colaboradorID = colaboradores.Where(n => n.Nome == formando).Select(i => i.ColaboradorID).FirstOrDefault();
+                    Guid colaboradorID = colaboradores.Where(n => RemoveDiacritics(n.Nome) == formando).Select(i => i.ColaboradorID).FirstOrDefault();
+                    Console.WriteLine(colaboradorID);
                     Guid cursoID = cursos.Where(n => n.Designacao == curso).Select(i => i.CursoID).FirstOrDefault();
 
-                    int i = 0;
                     Console.WriteLine("a processar linha " + i++);
 
                     if (colaboradorID != Guid.Empty && cursoID != Guid.Empty)
@@ -360,20 +366,28 @@
             if (CharUnicodeInfo.GetUnicodeCategory(letter) != UnicodeCategory.NonSpacingMark)
                 sbReturn.Append(letter);
         }
-        return sbReturn.ToString().ToUpper();
+        return sbReturn.ToString().Trim().ToLower();
     }
 
     private DateTime CsToDateTime(string str)
     {
-        CultureInfo ptPT = new CultureInfo("pt-PT");
-        if (String.IsNullOrEmpty(str) || str == " ")
+        string[] dateFormats = new[]
+            {
+                "d/M/yyyy HH:mm:ss tt",
+                "M/d/yyyy HH:mm:ss tt",
+                "dd/MM/yyyy HH:mm:ss",
+                "dd-MM-yyyy HH:mm:ss"
+            };
+
+        DateTime dateTime;
+
+        if (DateTime.TryParseExact(str, dateFormats, CultureInfo.InvariantCulture, DateTimeStyles.None, out dateTime))
         {
-            DateTime dateTime = DateTime.Parse("01/01/1900 00:00:00", ptPT);
             return dateTime;
         }
         else
         {
-            DateTime dateTime = DateTime.Parse(str, ptPT);
+            dateTime = DateTime.Parse("01-01-1900 00:00:00", CultureInfo.InvariantCulture);
             return dateTime;
         }
     }
