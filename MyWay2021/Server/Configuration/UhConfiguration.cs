@@ -20,8 +20,8 @@ namespace MyWay2021.Server.Configuration
                     ID = new Guid(lisId),
                     Nome = "Lisboa",
                     IATA = "LIS",
-                    CodAeroporto= "AHD",
-                    NomeAeroporto= "Aeroporto Humberto Delgado"
+                    CodAeroporto = "AHD",
+                    NomeAeroporto = "Aeroporto Humberto Delgado"
                 },
                 new Uh
                 {
@@ -46,6 +46,14 @@ namespace MyWay2021.Server.Configuration
                     IATA = "FNC",
                     CodAeroporto = "ACR",
                     NomeAeroporto = "Aeroporto Cristiano Ronaldo"
+                },
+                new Uh
+                {
+                    ID = new Guid("81cfd799-1cb5-4852-8123-845ae6da4404"),
+                    Nome = "Nill",
+                    IATA = "N",
+                    CodAeroporto = "Nill",
+                    NomeAeroporto = "Nill"
                 }
             );
         }

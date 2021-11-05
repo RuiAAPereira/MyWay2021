@@ -1,0 +1,190 @@
+﻿@page "/colaboradores"
+
+@inject IToastService toastService
+@inject HttpClient client
+@inject IJSRuntime js
+
+<AuthorizeView Context="authContext" Roles="@("Administrador")">
+    <Authorized>
+        <BreadCrumb breadCrumbs="breadCrumbs"></BreadCrumb>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12 col-md-8 col-lg-6">
+                    <SfCard ID="Funcoes">
+                        <CardHeader Title="Funções" />
+                        <CardContent>
+                            <SpinLoader IsLoading="@(funcoes == null)">
+                                <LoadingTemplate>
+                                    <div class="modal-overlay">
+                                        <Chase Color="#ff0000" Size="60px" Center="true" />
+                                    </div>
+                                </LoadingTemplate>
+                                <ContentTemplate>
+                                    @if (funcoes.Count == 0)
+                                    {
+                                        <text>Não foram encontrados registos na base de dados</text>
+                                    }
+                                    else
+                                    {
+                                        <table class="table table-striped table-bordered table-hover">
+                                            <thead class="thead-light">
+                                                <tr>
+                                                    <th scope="col">Menu</th>
+                                                    <th scope="col">Nome</th>
+                                                    @if (@authContext.User.IsInRole("temp")) //substituir por Admins
+                                                    {
+                                                        <th scope="col">Criado em:</th>
+                                                        <th scope="col">Criado por:</th>
+                                                        <th scope="col">Atualizado em:</th>
+                                                        <th scope="col">Atualizado por:</th>
+                                                    }
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (Funcao funcao in funcoes)
+                                                {
+                                                    <tr>
+                                                        <td width="120px" align="center">
+                                                            <span class="d-inline-block" tabindex="0" data-toggle="tooltip" data-placement="top"
+                                                                  title="Editar unidade de handling">
+                                                                <button type="button" class="btn btn-info"
+                                                                        data-toggle="modal" data-target="#funcaoModal"
+                                                                        @onclick="@(() => PrepareForEdit(funcao))">
+                                                                    <i class="fas fa-edit"></i>
+                                                                </button>
+                                                            </span>
+                                                            <span class="d-inline-block" tabindex="0" data-toggle="tooltip" data-placement="top"
+                                                                  title="Apagar unidade de handling">
+                                                                <button type="button" class="btn btn-danger"
+                                                                        data-toggle="modal" data-target="#confirmDeleteModal"
+                                                                        @onclick="@(() => PrepareForDelete(funcao.ID))">
+                                                                    <i class="fas fa-trash-alt"></i>
+                                                                </button>
+                                                            </span>
+                                                        </td>
+                                                        <td>@funcao.Nome</td>
+                                                        @if (@authContext.User.IsInRole("temp")) //substituir por Admins
+                                                        {
+                                                            <td>@funcao.CreatedAt</td>
+                                                            <td>@funcao.CreatedBy</td>
+                                                            <td>@funcao.LastUpdatedAt</td>
+                                                            <td>@funcao.LastUpdatedBy</td>
+                                                        }
+                                                    </tr>
+                                                }
+
+                                            </tbody>
+                                        </table>
+                                    }
+                                </ContentTemplate>
+                                <FaultedContentTemplate>
+                                    <text>ERRO! Por favor contacte o administrador do sistema!</text>
+                                </FaultedContentTemplate>
+                            </SpinLoader>
+                        </CardContent>
+                        <CardFooter>
+                            <CardFooterContent>
+                                <span class="d-inline-block" tabindex="0" data-toggle="tooltip" data-placement="top"
+                                      title="Criar nova unidade de handling">
+                                    <button type="button" class="btn btn-success"
+                                            data-toggle="modal" data-target="#uhModal"
+                                            @onclick="@(() => PrepareToAdd())">
+                                        <i class="fas fa-plus"></i>&nbsp;Criar
+                                    </button>
+                                </span>
+                            </CardFooterContent>
+                        </CardFooter>
+                    </SfCard>
+                </div>
+            </div>
+        </div>
+
+        <ConfirmDialog OnClick="@Delete">
+            <ConfirmText>
+                <p>Deseja de apagar @ItemToDelete ?</p>
+                <p>Não será possível recuperar este registo!</p>
+            </ConfirmText>
+        </ConfirmDialog>
+        <ColaboradorModal Model=Model DataChanged="@DataChanged">
+            <CustomHeader>@CustomHeader</CustomHeader>
+        </ColaboradorModal>
+
+    </Authorized>
+    <NotAuthorized>
+        <p>Não está logado.</p>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    public List<BreadCrumbData> breadCrumbs = new List<BreadCrumbData>();
+
+    List<Funcao> funcoes { get; set; }
+    Funcao Model = new Funcao();
+    Guid FuncaoToDelete { get; set; }
+    string ItemToDelete = string.Empty;
+    string CustomHeader = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        BreadCrumbData breadCrumb = new BreadCrumbData
+        {
+            Text = "Início",
+            Url = "/"
+        };
+        breadCrumbs.Add(breadCrumb);
+
+        breadCrumb = new BreadCrumbData
+        {
+            Text = "Tabelas",
+            Url = "/funcoes"
+        };
+        breadCrumbs.Add(breadCrumb);
+
+        breadCrumb = new BreadCrumbData
+        {
+            Text = "Funções",
+            Url = "/funcoes"
+        };
+        breadCrumbs.Add(breadCrumb);
+
+        funcoes = await client.GetFromJsonAsync<List<Funcao>>("api/funcao");
+    }
+
+    private async void DataChanged()
+    {
+        breadCrumbs.Clear();
+        await OnInitializedAsync();
+        StateHasChanged();
+    }
+
+    private void PrepareToAdd()
+    {
+        Model = new Funcao();
+        CustomHeader = "Adicionar função";
+    }
+
+    private void PrepareForEdit(Funcao funcao)
+    {
+        CustomHeader = "Editar função";
+        Model = funcao;
+    }
+
+    private void PrepareForDelete(Guid funcaoId)
+    {
+        FuncaoToDelete = funcaoId;
+        var funcao = funcoes.First(x => x.ID == FuncaoToDelete);
+        ItemToDelete = funcao.Nome;
+    }
+
+    async Task Delete()
+    {
+        await client.DeleteAsync($"api/funcao/{FuncaoToDelete}");
+        await js.InvokeAsync<object>("global.closeModal", "confirmDeleteModal");
+
+        await Task.Delay(100);
+        toastService.ShowSuccess("Função apagada com sucesso", "Sucesso!");
+
+        breadCrumbs.Clear();
+        await OnInitializedAsync();
+    }
+}

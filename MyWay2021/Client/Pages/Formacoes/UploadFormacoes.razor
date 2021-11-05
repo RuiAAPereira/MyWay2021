@@ -32,18 +32,11 @@
                 <BreadCrumb breadCrumbs="breadCrumbs"></BreadCrumb>
             </div>
             <div class="row">
-                <SfSpinner @ref="SpinnerObj" Target="#container"></SfSpinner>
 
                 <div id="container" class="row col-12">
+                    <SfSpinner @ref="SpinnerObj"></SfSpinner>
                     <div class="row col-12">
                         <div class="col-md-3 col-sm-3 col-xs-6">
-                            <div class="row p-2">
-                                <SfDropDownList TValue="Guid" TItem="Uh" Placeholder="Selecionar UH" required CssClass="@Validate">
-                                    <SfDataManager Url="api/uh/GetUhOwned" Adaptor="Adaptors.WebApiAdaptor" CrossDomain="true"></SfDataManager>
-                                    <DropDownListEvents TValue="Guid" TItem="Uh" ValueChange="@OnChange"></DropDownListEvents>
-                                    <DropDownListFieldSettings Text="Nome" Value="ID"></DropDownListFieldSettings>
-                                </SfDropDownList>
-                            </div>
                             <div class="row p-2">
                                 <InputFile OnChange="@OnFileSelection" accept=".xls,.xlsx">Escolher ficheiro</InputFile>
                             </div>
@@ -92,8 +85,7 @@
 @code{
     SfSpinner SpinnerObj;
     public List<BreadCrumbData>
-    breadCrumbs = new List<BreadCrumbData>
-        ();
+    breadCrumbs = new List<BreadCrumbData>();
 
     SfToast ToastError;
     SfToast ToastOk;
@@ -105,27 +97,16 @@
         Toast = new List<ToastModel>
             {
                 new ToastModel{ Title = "ERRO!", Content="Por favor selecione um ficheiro.", CssClass="e-toast-danger", Icon="e-error toast-icons" },
-                new ToastModel{ Title = "ERRO!", Content="Por favor selecione uma Unidade de handling.", CssClass="e-toast-danger", Icon="e-error toast-icons" },
                 new ToastModel{ Title = "ERRO!", Content="os cabeçalhos do ficheiro não coincidem.", CssClass="e-toast-danger", Icon="e-error toast-icons" }
-                    };
+                };
 
     int inserted { get; set; } = 0;
     int updated { get; set; } = 0;
     int progress { get; set; }
     int maxProgres { get; set; }
 
-    public List<Uh>
-        uhs
-    { get; set; }
-    public List<Curso>
-        cursos
-    { get; set; }
-    public List<Colaborador>
-        colaboradores
-    { get; set; }
-    public List<FormacaoConcluida>
-        acoes
-    { get; set; }
+    public List<Curso> cursos { get; set; }
+    public List<Colaborador> colaboradores { get; set; }
 
     public string[] formacoesFile = new string[] {
                                 "Formando","Curso","Acção","Empresa","Nº funcionário", "Departamento", "Categoria",
@@ -138,9 +119,8 @@
     IBrowserFile myFile;
     private string textValue { get; set; }
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-
         BreadCrumbData breadCrumb = new BreadCrumbData
         {
             Text = "Início",
@@ -155,10 +135,8 @@
         };
         breadCrumbs.Add(breadCrumb);
 
-        uhs = await http.GetFromJsonAsync<List<Uh>>("api/uh");
     }
 
-    public Guid uhValue { get; set; } = Guid.Empty;
 
     public void OnChange(Syncfusion.Blazor.DropDowns.ChangeEventArgs<Guid, Uh> args)
     {
@@ -170,8 +148,6 @@
         {
             this.Validate = "e-success";
         }
-
-        this.uhValue = args.ItemData.ID;
     }
 
     string myFileName = string.Empty;
@@ -190,16 +166,11 @@
 
     private async void ProcessFile()
     {
-        bool uhSelected = (uhValue != Guid.Empty ? true : false);
-        if (!fileSelected || !uhSelected)
+        if (!fileSelected)
         {
             if (!fileSelected)
             {
                 await this.ToastError.Show(Toast[0]);
-            }
-            if (!uhSelected)
-            {
-                await this.ToastError.Show(Toast[1]);
             }
             return;
         }
@@ -250,9 +221,8 @@
 
             if (columnNames.SequenceEqual(formacoesFile))
             {
-                Console.WriteLine("Ficheiro de formações");
+                Console.WriteLine("Ficheiro do forinsia");
                 cursos = await http.GetFromJsonAsync<List<Curso>>("api/curso");
-                acoes = await http.GetFromJsonAsync<List<FormacaoConcluida>>("api/formacaoConcluida");
                 colaboradores = await http.GetFromJsonAsync<List<Colaborador>>("api/colaborador");
 
                 int i = 0;
@@ -262,66 +232,79 @@
                     Console.WriteLine(" ");
                     string formando = RemoveDiacritics(row["Formando"].ToString());
                     Console.WriteLine(formando);
-                    string curso = row["Curso"].ToString();
+                    string curso = RemoveDiacritics(row["Curso"].ToString());
                     Console.WriteLine(curso);
                     string numPw = row["Nº funcionário"].ToString().Trim();
                     Console.WriteLine(numPw);
-                    string dep = row["Departamento"].ToString();
-                    Console.WriteLine(dep);
-                    string cat = row["Categoria"].ToString();
-                    Console.WriteLine(cat);
-                    string func = row["Função"].ToString();
-                    Console.WriteLine(func);
-                    DateTime dataInicio = CsToDateTime(row["Data início acção"].ToString());
-                    Console.WriteLine(dataInicio);
                     DateTime dataFim = CsToDateTime(row["Data fim acção"].ToString());
                     Console.WriteLine(dataFim);
-                    //int totalH = int.Parse(row["Nº total de horas da acção"].ToString());
-                    //Console.WriteLine(totalH);
-                    //double numH = double.Parse(row["Nº de horas frequentadas pelo formando"].ToString());
-                    //Console.WriteLine(numH);
+
+                    int? numFuncionario = null;
+
+                    if (Int32.TryParse(numPw, out int n))
+                    {
+                        numFuncionario = n;
+                        Console.WriteLine(n);
+                    }
+                    else
+                    {
+                        Console.WriteLine("String could not be parsed.");
+                    }
+
+                    if (!colaboradores.Any(n => RemoveDiacritics(n.Nome) == formando))
+                    {
+                        Colaborador novoColaborador = new()
+                        {
+                            UhID= new Guid("81cfd799-1cb5-4852-8123-845ae6da4404"),
+                            NumPw = numFuncionario,
+                            Nome = formando,
+                            Ativo = false,
+                            DepartamentoID = new Guid("f029ae62-42e2-45b5-ae2f-db2c8cbd92cc")
+                        };
+                    }
 
                     Guid colaboradorID = colaboradores.Where(n => RemoveDiacritics(n.Nome) == formando).Select(i => i.ColaboradorID).FirstOrDefault();
                     Console.WriteLine(colaboradorID);
-                    Guid cursoID = cursos.Where(n => n.Designacao == curso).Select(i => i.CursoID).FirstOrDefault();
+                    Guid cursoID = cursos.Where(n => RemoveDiacritics(n.Designacao) == curso).Select(i => i.CursoID).FirstOrDefault();
+                    Console.WriteLine(cursoID);
 
                     Console.WriteLine("a processar linha " + i++);
 
                     if (colaboradorID != Guid.Empty && cursoID != Guid.Empty)
                     {
-                        FormacaoConcluida current = new()
-                        {
-                            ColaboradorID = colaboradorID,
-                            CursoID = cursoID,
-                            DataAcao = dataInicio,
-                            DataFimAcao = dataFim,
-                            DataValidade = dataFim.AddYears(3)
-                        };
+                        //FormacaoConcluida current = new()
+                        //{
+                        //    ColaboradorID = colaboradorID,
+                        //    CursoID = cursoID,
+                        //    DataAcao = dataInicio,
+                        //    DataFimAcao = dataFim,
+                        //    DataValidade = dataFim.AddYears(3)
+                        //};
 
-                        FormacaoConcluida exists = acoes.Where(d =>
-                            d.ColaboradorID == current.ColaboradorID &&
-                            d.CursoID == current.CursoID &&
-                            d.DataAcao == current.DataFimAcao &&
-                            d.DataFimAcao == current.DataValidade
-                        ).FirstOrDefault();
+                        //FormacaoConcluida exists = acoes.Where(d =>
+                        //    d.ColaboradorID == current.ColaboradorID &&
+                        //    d.CursoID == current.CursoID &&
+                        //    d.DataAcao == current.DataFimAcao &&
+                        //    d.DataFimAcao == current.DataValidade
+                        //).FirstOrDefault();
 
-                        if (exists != null)
-                        {
-                            current.FCID = exists.FCID;
-                            //await http.PutAsJsonAsync("api/formacoesConcluidas", current);
-                            updated += 1;
-                            progress += 1;
-                            Console.WriteLine("existem " + updated + " duplicados");
-                            base.StateHasChanged();
-                        }
-                        else
-                        {
-                            //await http.PostAsJsonAsync("api/formacoesConcluidas", current);
-                            inserted += 1;
-                            progress += 1;
-                            Console.WriteLine("foram inseridas " + inserted + " linhas");
-                            base.StateHasChanged();
-                        }
+                        //if (exists != null)
+                        //{
+                        //    current.FCID = exists.FCID;
+                        //    //await http.PutAsJsonAsync("api/formacoesConcluidas", current);
+                        //    updated += 1;
+                        //    progress += 1;
+                        //    Console.WriteLine("existem " + updated + " duplicados");
+                        //    base.StateHasChanged();
+                        //}
+                        //else
+                        //{
+                        //    //await http.PostAsJsonAsync("api/formacoesConcluidas", current);
+                        //    inserted += 1;
+                        //    progress += 1;
+                        //    Console.WriteLine("foram inseridas " + inserted + " linhas");
+                        //    base.StateHasChanged();
+                        //}
                     }
 
                 }
@@ -357,16 +340,13 @@
         return id;
     }
 
-    private string RemoveDiacritics(string text)
+    static string RemoveDiacritics(string text)
     {
-        StringBuilder sbReturn = new StringBuilder();
-        var arrayText = text.Normalize(NormalizationForm.FormD).ToCharArray();
-        foreach (char letter in arrayText)
-        {
-            if (CharUnicodeInfo.GetUnicodeCategory(letter) != UnicodeCategory.NonSpacingMark)
-                sbReturn.Append(letter);
-        }
-        return sbReturn.ToString().Trim().ToLower();
+        return string.Concat(
+            text.Normalize(NormalizationForm.FormD)
+            .Where(ch => CharUnicodeInfo.GetUnicodeCategory(ch) !=
+                                          UnicodeCategory.NonSpacingMark)
+          ).Normalize(NormalizationForm.FormC).Trim().ToUpper();
     }
 
     private DateTime CsToDateTime(string str)

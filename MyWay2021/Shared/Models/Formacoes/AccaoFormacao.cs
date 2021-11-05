@@ -1,31 +1,28 @@
-﻿using System;
+﻿using MyWay2021.Shared.Models.Colaboradores;
+using MyWay2021.Shared.Models.Tabelas;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text;
 
-namespace MyWay2021.Shared.Models.Tabelas
+namespace MyWay2021.Shared.Models.Formacoes
 {
-    [Table("Salas")]
-    public class Sala : IBaseEntity
+    [Table("AccaoFormacao")]
+    public class AccaoFormacao : IBaseEntity
     {
         [Key]
-        public Guid SalaID { get; set; }
+        public Guid AccaoFormacaoID { get; set; }
 
-        string _salaNome;
-        [Required, MaxLength(50), Display(Name = "Sala:", ShortName = "S:")]
-        public string SalaNome
-        {
-            get => _salaNome;
-            set => _salaNome = value.ToUpper();
-        }
+        [Display(Name = "Colaborador:")]
+        public Guid ColaboradorID { get; set; }
+        public Colaborador Colaborador { get; set; }
 
-        [Required, Display(Name = "Capacidade:")]
-        public int Capacidade { get; set; }
+        [Display(Name = "Curso:")]
+        public Guid CursoID { get; set; }
+        public Curso Curso { get; set; }
 
-        //link com a tabela UH (unidades de handling)
-        public int UhID { get; set; }
-        public Uh Uh { get; set; }
+        [DataType(DataType.Date), Display(Name = "Data da Acção:")]
+        public DateTime DataAccao { get; set; }
 
         #region BaseEntity
         [Display(Name = "Registo criado em:", ShortName = "Criado em:")]

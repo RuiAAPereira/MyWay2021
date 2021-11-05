@@ -1,5 +1,7 @@
-﻿using MyWay2021.Shared.Models.Tabelas;
+﻿using MyWay2021.Shared.Models.Formacoes;
+using MyWay2021.Shared.Models.Tabelas;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -30,10 +32,10 @@ namespace MyWay2021.Shared.Models.Colaboradores
         [Display(Name = "Ativo?:")]
         public bool Ativo { get; set; } = true;
 
-        [DataType(DataType.Date), Display(Name = "Data de Admissão:")]
-        public DateTime? DataAdmissao { get; set; }
-        [DataType(DataType.Date), Display(Name = "Fim de contrato:")]
-        public DateTime? DataFim { get; set; }
+        [Display(Name = "Departamento:")]
+        [ForeignKey("Departamento")]
+        public Guid DepartamentoID { get; set; }
+        public Departamento Departamento { get; set; }
 
         #region BaseEntity
         [Display(Name = "Registo criado em:", ShortName = "Criado em:")]
@@ -45,5 +47,6 @@ namespace MyWay2021.Shared.Models.Colaboradores
         [Display(Name = "Registo atualizado por:", ShortName = "Atualizado por:")]
         public string LastUpdatedBy { get; set; }
         #endregion
+
     }
 }

@@ -11,9 +11,9 @@
 <AuthorizeView Context="authContext" Roles="@("Administrador")">
     <Authorized>
 
-        <SfSpinner @ref="SpinnerObj" Target="#container"></SfSpinner>
-
         <div class="container-fluid" id="container">
+            <SfSpinner @ref="SpinnerObj"></SfSpinner>
+
             <div class="row">
                 <BreadCrumb breadCrumbs="breadCrumbs"></BreadCrumb>
             </div>

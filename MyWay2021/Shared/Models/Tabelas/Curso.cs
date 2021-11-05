@@ -1,7 +1,5 @@
-﻿using MyWay2021.Shared.Models.Tabelas;
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MyWay2021.Shared.Models.Tabelas
 {

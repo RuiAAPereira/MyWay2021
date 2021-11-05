@@ -8,6 +8,7 @@ using MyWay2021.Shared.Models;
 using MyWay2021.Shared.Models.Analise;
 using MyWay2021.Shared.Models.Atrasos;
 using MyWay2021.Shared.Models.Colaboradores;
+using MyWay2021.Shared.Models.Formacoes;
 using MyWay2021.Shared.Models.Relatorios;
 using MyWay2021.Shared.Models.Tabelas;
 using System;
@@ -46,11 +47,7 @@ namespace MyWay2021.Server.Data
         #endregion
         #region Set DbSet Colaboradores
         public DbSet<Colaborador> Colaboradores { get; set; }
-        public DbSet<FormacaoConcluida> FormacoesConcluidas { get; set; }
-        //public DbSet<DadosPessoais> DadosPessoais { get; set; }
-        //public DbSet<Email> Emails { get; set; }
-        //public DbSet<Observacao> Observacoes { get; set; }
-        //public DbSet<Telefone> Telefones { get; set; }
+        public DbSet<AccaoFormacao> AccoesFormacao { get; set; }
         #endregion
         #region Set DbSet Identity
         public DbSet<UserUh> UsersUhs { get; set; }
@@ -64,26 +61,18 @@ namespace MyWay2021.Server.Data
         //public DbSet<TrabalhoSuplementar> HorasExtra { get; set; }
         #endregion
         #region set DbSet Tabelas
-        //public DbSet<Categoria> Categorias { get; set; }
-        //public DbSet<Contrato> Contratos { get; set; }
-        //public DbSet<Departamento> Departamentos { get; set; }
-        //public DbSet<Equipa> Equipas { get; set; }
-        //public DbSet<Formador> Formadores { get; set; }
-        //public DbSet<Formando> Formandos { get; set; }
         public DbSet<Funcao> Funcoes { get; set; }
-        //public DbSet<Horario> Horarios { get; set; }
-        public DbSet<Justificacao> Justificacoes { get; set; }
         public DbSet<Parametro> Parametros { get; set; }
         public DbSet<Pier> Piers { get; set; }
         public DbSet<Plataforma> Plataformas { get; set; }
         public DbSet<Porta> Portas { get; set; }
-        public DbSet<Sala> Salas { get; set; }
         public DbSet<Stand> Stands { get; set; }
         public DbSet<TipoAssistencia> TiposAssistencia { get; set; }
         public DbSet<TipoMensagem> TiposMensagem { get; set; }
         public DbSet<TipoVoo> TipoVoos { get; set; }
         public DbSet<Uh> Uhs { get; set; }
         public DbSet<Curso> Cursos { get; set; }
+        public DbSet<Departamento> Departamentos { get; set; }
         #endregion
 
         protected override void OnModelCreating(ModelBuilder builder)

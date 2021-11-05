@@ -22,7 +22,7 @@ namespace MyWay2021.Client.Services
             var identity = new ClaimsIdentity();
             try
             {
-                var userInfo = await GetCurrentUser();
+                CurrentUser userInfo = await GetCurrentUser();
                 if (userInfo.IsAuthenticated)
                 {
                     var claims = new[] { new Claim(ClaimTypes.Name, _currentUser.UserName) }.Concat(_currentUser.Claims.Select(c => new Claim(c.Key, c.Value)));
