@@ -20,14 +20,18 @@ namespace MyWay2021.Server.Controllers.Colaboradores
         [HttpGet]
         public async Task<IActionResult> Get()
         {
-            var colaborador = await _db.Colaboradores.ToListAsync();
+            var colaborador = await _db.Colaboradores
+                .Include(u => u.Uh)
+                .Include(d => d.Departamento)
+                .ToListAsync();
             return Ok(colaborador);
         }
 
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(Guid id)
         {
-            var colaborador = await _db.Colaboradores.FirstOrDefaultAsync(a => a.ColaboradorID == id);
+            var colaborador = await _db.Colaboradores
+                .FirstOrDefaultAsync(a => a.ColaboradorID == id);
             return Ok(colaborador);
         }
 

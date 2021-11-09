@@ -31,6 +31,10 @@ namespace MyWay2021.Server.Data
             _httpContextAccessor = httpContextAccessor;
         }
 
+        public AppDBContext()
+        {
+        }
+
         #region set DbSet Analise
         public DbSet<AssistenciasPRM> AssistenciasPRMS { get; set; }
         public DbSet<DadosAeroporto> DadosAeroportos { get; set; }

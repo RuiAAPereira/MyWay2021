@@ -1,5 +1,5 @@
-﻿@page "/colaboradores"
-@using MyWay2021.Shared.Models.Colaboradores
+﻿@page "/cursos"
+
 @inject IToastService toastService
 @inject HttpClient http
 @inject IJSRuntime js
@@ -10,17 +10,17 @@
         <div class="container-fluid">
             <div class="row">
                 <div class="col-12 col-md-8 col-lg-6">
-                    <SfCard ID="Colaboradores">
-                        <CardHeader Title="Colaboradores" />
+                    <SfCard ID="Cursos">
+                        <CardHeader Title="Cursos" />
                         <CardContent>
-                            <SpinLoader IsLoading="@(colaboradores == null)">
+                            <SpinLoader IsLoading="@(cursos == null)">
                                 <LoadingTemplate>
                                     <div class="modal-overlay">
                                         <Chase Color="#ff0000" Size="60px" Center="true" />
                                     </div>
                                 </LoadingTemplate>
                                 <ContentTemplate>
-                                    @if (colaboradores.Count == 0)
+                                    @if (cursos.Count == 0)
                                     {
                                         <text>Não foram encontrados registos na base de dados</text>
                                     }
@@ -29,7 +29,7 @@
                                         <SfButton OnClick="ExcelExport" IconCss="e-icons e-export_excel" IconPosition="IconPosition.Left" Content="Excel"></SfButton>
                                         <br />
                                         <br />
-                                        <SfGrid @ref="ColaboradoresGrid" DataSource="@colaboradores" AllowExcelExport="true" AllowPaging="true"
+                                        <SfGrid @ref="CursosGrid" DataSource="@cursos" AllowExcelExport="true" AllowPaging="true"
                                                 Toolbar="@(new List<string>() { "Add", "Edit", "Delete", "Cancel", "Update", "Search" })">
                                             <GridPageSettings PageSize="25"></GridPageSettings>
                                             <GridEditSettings AllowAdding="true" AllowDeleting="true" AllowEditing="true" Mode="EditMode.Normal"
@@ -52,14 +52,11 @@
                                                         }
                                                     </Template>*@
                                             </GridEditSettings>
-                                            <GridEvents OnActionBegin="ActionBeginHandler" OnActionComplete="ActionCompleteHandler" TValue="Colaborador"></GridEvents>
+                                            <GridEvents OnActionBegin="ActionBeginHandler" OnActionComplete="ActionCompleteHandler" TValue="Curso"></GridEvents>
                                             <GridColumns>
-                                                <GridColumn Field="ColaboradorID" HeaderText="ID" IsPrimaryKey="true" IsIdentity="true" Visible="false"></GridColumn>
-                                                <GridColumn Field="Uh.Nome" HeaderText="Uh" Width="100"></GridColumn>
-                                                <GridColumn Field="NumPw" HeaderText="Número" Width="100"></GridColumn>
-                                                <GridColumn Field="Nome" HeaderText="Nome"></GridColumn>
-                                                <GridColumn Field="Ativo" HeaderText="Ativo?" Width="100"></GridColumn>
-                                                <GridColumn Field="Departamento.DepartamentoNome" HeaderText="Departamento"></GridColumn>
+                                                <GridColumn Field="CursoID" HeaderText="ID" IsPrimaryKey="true" IsIdentity="true" Visible="false"></GridColumn>
+                                                <GridColumn Field="Designacao" HeaderText="Curso"></GridColumn>
+                                                <GridColumn Field="Validade" HeaderText="Validade"></GridColumn>
                                             </GridColumns>
                                         </SfGrid>
 
@@ -94,8 +91,8 @@
 
 @code {
     public List<BreadCrumbData> breadCrumbs = new List<BreadCrumbData>();
-    private SfGrid<Colaborador> ColaboradoresGrid;
-    List<Colaborador> colaboradores { get; set; }
+    private SfGrid<Curso> CursosGrid;
+    List<Curso> cursos { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -109,53 +106,53 @@
         breadCrumb = new BreadCrumbData
         {
             Text = "Tabelas",
-            Url = "/colaboradores"
+            Url = "/cursos"
         };
         breadCrumbs.Add(breadCrumb);
 
         breadCrumb = new BreadCrumbData
         {
             Text = "Cursos",
-            Url = "/colaboradores"
+            Url = "/cursos"
         };
         breadCrumbs.Add(breadCrumb);
 
-        colaboradores = await http.GetFromJsonAsync<List<Colaborador>>("api/Colaborador");
+        cursos = await http.GetFromJsonAsync<List<Curso>>("api/curso");
     }
 
-    public async Task ActionBeginHandler(ActionEventArgs<Colaborador> Args)
+    public async Task ActionBeginHandler(ActionEventArgs<Curso> Args)
     {
         if (Args.RequestType.Equals(Syncfusion.Blazor.Grids.Action.Save))
         {
             if (Args.Action == "Add")
             {
-                await http.PostAsJsonAsync("api/colaborador", Args.Data);
-                toastService.ShowSuccess("Colaborador adicionado com sucesso", "Sucesso!");
+                await http.PostAsJsonAsync("api/curso", Args.Data);
+                toastService.ShowSuccess("Curso adicionado com sucesso", "Sucesso!");
             }
             else
             {
-                await http.PutAsJsonAsync("api/colaborador", Args.Data);
-                toastService.ShowSuccess("Colaborador editado com sucesso", "Sucesso!");
+                await http.PutAsJsonAsync("api/curso", Args.Data);
+                toastService.ShowSuccess("Curso editado com sucesso", "Sucesso!");
             }
         }
         if (Args.RequestType.Equals(Syncfusion.Blazor.Grids.Action.Delete))
         {
-            await http.DeleteAsync($"api/colaborador/{Args.Data.ColaboradorID}");
-            toastService.ShowSuccess("Colaborador apagado com sucesso", "Sucesso!");
+            await http.DeleteAsync($"api/curso/{Args.Data.CursoID}");
+            toastService.ShowSuccess("Curso apagado com sucesso", "Sucesso!");
         }
     }
 
-    public async Task ActionCompleteHandler(ActionEventArgs<Colaborador> Args)
+    public async Task ActionCompleteHandler(ActionEventArgs<Curso> Args)
     {
         if (Args.RequestType.Equals(Syncfusion.Blazor.Grids.Action.Save))
         {
-            colaboradores = await http.GetFromJsonAsync<List<Colaborador>>("api/colaborador");
+            cursos = await http.GetFromJsonAsync<List<Curso>>("api/curso");
         }
     }
 
     public async Task ExcelExport()
     {
-        await this.ColaboradoresGrid.ExcelExport();
+        await this.CursosGrid.ExcelExport();
     }
 
 }

@@ -1,6 +1,7 @@
 ﻿@page "/uploadFormacoes"
 
 @using MyWay2021.Shared.Models.Colaboradores
+@using MyWay2021.Shared.Models.Formacoes
 @using System.IO
 @using System.Globalization
 @using OfficeOpenXml
@@ -93,12 +94,10 @@
     private string ToastTitle = "";
     private string ToastContent = "";
 
-    private List<ToastModel>
-        Toast = new List<ToastModel>
-            {
-                new ToastModel{ Title = "ERRO!", Content="Por favor selecione um ficheiro.", CssClass="e-toast-danger", Icon="e-error toast-icons" },
-                new ToastModel{ Title = "ERRO!", Content="os cabeçalhos do ficheiro não coincidem.", CssClass="e-toast-danger", Icon="e-error toast-icons" }
-                };
+    private List<ToastModel> Toast = new List<ToastModel> {
+        new ToastModel{ Title = "ERRO!", Content="Por favor selecione um ficheiro.", CssClass="e-toast-danger", Icon="e-error toast-icons" },
+        new ToastModel{ Title = "ERRO!", Content="os cabeçalhos do ficheiro não coincidem.", CssClass="e-toast-danger", Icon="e-error toast-icons" }
+    };
 
     int inserted { get; set; } = 0;
     int updated { get; set; } = 0;
@@ -107,11 +106,15 @@
 
     public List<Curso> cursos { get; set; }
     public List<Colaborador> colaboradores { get; set; }
+    public List<AccaoFormacao> accoesFormacao { get; set; }
 
     public string[] formacoesFile = new string[] {
-                                "Formando","Curso","Acção","Empresa","Nº funcionário", "Departamento", "Categoria",
-                                "Função", "Data início acção", "Data fim acção","Nº total de horas da acção","Nº de horas frequentadas pelo formando"
-                                };
+        "Formando","Curso","Acção","Empresa","Nº funcionário", "Departamento", "Categoria",
+        "Função", "Data início acção", "Data fim acção","Nº total de horas da acção","Nº de horas frequentadas pelo formando"
+    };
+    public string[] moodleFile = new string[] {
+        "nome", "curso", "nota", "data"
+    };
 
     string Validate = "e-error";
 
@@ -119,7 +122,7 @@
     IBrowserFile myFile;
     private string textValue { get; set; }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
         BreadCrumbData breadCrumb = new BreadCrumbData
         {
@@ -135,6 +138,9 @@
         };
         breadCrumbs.Add(breadCrumb);
 
+        cursos = await http.GetFromJsonAsync<List<Curso>>("api/curso");
+        colaboradores = await http.GetFromJsonAsync<List<Colaborador>>("api/colaborador");
+        accoesFormacao = await http.GetFromJsonAsync<List<AccaoFormacao>>("api/accaoFormacao");
     }
 
 
@@ -219,11 +225,12 @@
 
             maxProgres = excelasTable.Rows.Count;
 
+            cursos = await http.GetFromJsonAsync<List<Curso>>("api/curso");
+            colaboradores = await http.GetFromJsonAsync<List<Colaborador>>("api/colaborador");
+
             if (columnNames.SequenceEqual(formacoesFile))
             {
                 Console.WriteLine("Ficheiro do forinsia");
-                cursos = await http.GetFromJsonAsync<List<Curso>>("api/curso");
-                colaboradores = await http.GetFromJsonAsync<List<Colaborador>>("api/colaborador");
 
                 int i = 0;
 
@@ -248,23 +255,23 @@
                     }
                     else
                     {
-                        Console.WriteLine("String could not be parsed.");
+                        Console.WriteLine("Sem número portway.");
                     }
 
                     if (!colaboradores.Any(n => RemoveDiacritics(n.Nome) == formando))
                     {
-                        Colaborador novoColaborador = new()
-                        {
-                            UhID= new Guid("81cfd799-1cb5-4852-8123-845ae6da4404"),
-                            NumPw = numFuncionario,
-                            Nome = formando,
-                            Ativo = false,
-                            DepartamentoID = new Guid("f029ae62-42e2-45b5-ae2f-db2c8cbd92cc")
-                        };
+                        await AddColaborador(new Guid("81cfd799-1cb5-4852-8123-845ae6da4404"),
+                            numFuncionario, formando, false, new Guid("f029ae62-42e2-45b5-ae2f-db2c8cbd92cc"));
                     }
 
                     Guid colaboradorID = colaboradores.Where(n => RemoveDiacritics(n.Nome) == formando).Select(i => i.ColaboradorID).FirstOrDefault();
                     Console.WriteLine(colaboradorID);
+
+                    if (!cursos.Any(n => RemoveDiacritics(n.Designacao) == curso))
+                    {
+                        await AddCurso(curso, 3);
+                    }
+
                     Guid cursoID = cursos.Where(n => RemoveDiacritics(n.Designacao) == curso).Select(i => i.CursoID).FirstOrDefault();
                     Console.WriteLine(cursoID);
 
@@ -272,45 +279,67 @@
 
                     if (colaboradorID != Guid.Empty && cursoID != Guid.Empty)
                     {
-                        //FormacaoConcluida current = new()
-                        //{
-                        //    ColaboradorID = colaboradorID,
-                        //    CursoID = cursoID,
-                        //    DataAcao = dataInicio,
-                        //    DataFimAcao = dataFim,
-                        //    DataValidade = dataFim.AddYears(3)
-                        //};
-
-                        //FormacaoConcluida exists = acoes.Where(d =>
-                        //    d.ColaboradorID == current.ColaboradorID &&
-                        //    d.CursoID == current.CursoID &&
-                        //    d.DataAcao == current.DataFimAcao &&
-                        //    d.DataFimAcao == current.DataValidade
-                        //).FirstOrDefault();
-
-                        //if (exists != null)
-                        //{
-                        //    current.FCID = exists.FCID;
-                        //    //await http.PutAsJsonAsync("api/formacoesConcluidas", current);
-                        //    updated += 1;
-                        //    progress += 1;
-                        //    Console.WriteLine("existem " + updated + " duplicados");
-                        //    base.StateHasChanged();
-                        //}
-                        //else
-                        //{
-                        //    //await http.PostAsJsonAsync("api/formacoesConcluidas", current);
-                        //    inserted += 1;
-                        //    progress += 1;
-                        //    Console.WriteLine("foram inseridas " + inserted + " linhas");
-                        //    base.StateHasChanged();
-                        //}
+                        await AddAccaoFormacao(colaboradorID, cursoID, dataFim);
                     }
 
                 }
 
                 this.ToastTitle = "SUCESSO!";
-                this.ToastContent = "<h3>Ficheiro de histórico processado com sucesso!</h3>" +
+                this.ToastContent = "<h3>Ficheiro de formações processado com sucesso!</h3>" +
+                    "<br /> Foram adicionados " + inserted + " registos!" +
+                    "<br /> Foram atualizadas " + updated + " entradas!";
+                await Task.Delay(1000);
+                await this.ToastOk.Show();
+                inserted = 0;
+                updated = 0;
+                progress = 0;
+                maxProgres = 0;
+                base.StateHasChanged();
+            }
+            else if (columnNames.SequenceEqual(moodleFile))
+            {
+                Console.WriteLine("Ficheiro do moodle");
+
+                int i = 0;
+
+                foreach (DataRow row in excelasTable.Rows)
+                {
+                    Console.WriteLine(" ");
+                    string formando = RemoveDiacritics(row["nome"].ToString());
+                    Console.WriteLine(formando);
+                    string curso = RemoveDiacritics(row["curso"].ToString());
+                    Console.WriteLine(curso);
+                    DateTime dataFim = CsToDateTime(row["data"].ToString());
+                    Console.WriteLine(dataFim);
+
+                    if (!colaboradores.Any(n => RemoveDiacritics(n.Nome) == formando))
+                    {
+                        await AddColaborador(new Guid("81cfd799-1cb5-4852-8123-845ae6da4404"),
+                            null, formando, false, new Guid("f029ae62-42e2-45b5-ae2f-db2c8cbd92cc"));
+                    }
+
+                    Guid colaboradorID = colaboradores.Where(n => RemoveDiacritics(n.Nome) == formando).Select(i => i.ColaboradorID).FirstOrDefault();
+                    Console.WriteLine(colaboradorID);
+
+                    if (!cursos.Any(n => RemoveDiacritics(n.Designacao) == curso))
+                    {
+                        await AddCurso(curso, 3);
+                    }
+
+                    Guid cursoID = cursos.Where(n => RemoveDiacritics(n.Designacao) == curso).Select(i => i.CursoID).FirstOrDefault();
+                    Console.WriteLine(cursoID);
+
+                    Console.WriteLine("a processar linha " + i++);
+
+                    if (colaboradorID != Guid.Empty && cursoID != Guid.Empty)
+                    {
+                        await AddAccaoFormacao(colaboradorID, cursoID, dataFim);
+                    }
+
+                }
+
+                this.ToastTitle = "SUCESSO!";
+                this.ToastContent = "<h3>Ficheiro de formações processado com sucesso!</h3>" +
                     "<br /> Foram adicionados " + inserted + " registos!" +
                     "<br /> Foram atualizadas " + updated + " entradas!";
                 await Task.Delay(1000);
@@ -325,7 +354,7 @@
             {
                 Console.WriteLine("os cabeçalhos do ficheiro não coincidem");
 
-                await this.ToastError.Show(Toast[2]);
+                await this.ToastError.Show(Toast[1]);
 
                 return;
             }
@@ -334,10 +363,72 @@
 
     }
 
-    private Guid colaboradorID(string nome)
+    private async Task AddColaborador(Guid uhID, int? num, string nome, bool ativo, Guid depId) {
+        Colaborador novoColaborador = new()
+        {
+            //ColaboradorID = Guid.NewGuid(),
+            UhID = uhID,
+            NumPw = num,
+            Nome = nome,
+            Ativo = ativo,
+            DepartamentoID = depId
+        };
+
+        await http.PostAsJsonAsync("api/colaborador", novoColaborador);
+
+        colaboradores = await http.GetFromJsonAsync<List<Colaborador>>("api/colaborador");
+    }
+
+    private async Task AddCurso(string curso, int val)
     {
-        var id = colaboradores.Where(n => n.Nome.Trim() == nome).Select(i => i.ColaboradorID).FirstOrDefault();
-        return id;
+        Curso novoCurso = new()
+        {
+            //CursoID = Guid.NewGuid(),
+            Designacao = curso,
+            Validade = val
+        };
+
+        await http.PostAsJsonAsync("api/curso", novoCurso);
+        cursos = await http.GetFromJsonAsync<List<Curso>>("api/curso");
+
+    }
+
+    private async Task AddAccaoFormacao(Guid colaboradorID, Guid cursoID, DateTime dataFim)
+    {
+        AccaoFormacao current = new()
+        {
+            //AccaoFormacaoID = Guid.NewGuid(),
+            ColaboradorID = colaboradorID,
+            CursoID = cursoID,
+            DataAccao = dataFim
+        };
+
+        if (accoesFormacao.Any(a => a.ColaboradorID == colaboradorID
+                                 && a.CursoID == cursoID))
+        {
+            var old = accoesFormacao.Where(a => a.ColaboradorID == colaboradorID
+                                 && a.CursoID == cursoID).FirstOrDefault();
+
+            current.AccaoFormacaoID = old.AccaoFormacaoID;
+
+            if (old.DataAccao < current.DataAccao)
+            {
+                await http.PutAsJsonAsync("api/accaoFormacao", current);
+            }
+
+            updated += 1;
+            progress += 1;
+            Console.WriteLine("existem " + updated + " duplicados");
+            base.StateHasChanged();
+        }
+        else
+        {
+            await http.PostAsJsonAsync("api/accaoFormacao", current);
+            inserted += 1;
+            progress += 1;
+            Console.WriteLine("foram inseridas " + inserted + " linhas");
+            base.StateHasChanged();
+        }
     }
 
     static string RemoveDiacritics(string text)

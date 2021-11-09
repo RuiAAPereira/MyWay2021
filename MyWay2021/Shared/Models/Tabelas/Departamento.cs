@@ -35,6 +35,6 @@ namespace MyWay2021.Shared.Models.Tabelas
         public string LastUpdatedBy { get; set; }
         #endregion
 
-        public ICollection<Colaborador> Colaboradores { get; set; }
+        //public ICollection<Colaborador> Colaboradores { get; set; }
     }
 }
