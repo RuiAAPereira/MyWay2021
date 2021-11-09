@@ -1,0 +1,167 @@
+﻿@page "/listagemFormacoesMyWay"
+
+@using Syncfusion.Blazor.Inputs
+@using Syncfusion.Blazor.Buttons
+@using Syncfusion.Blazor.Grids
+@using MyWay2021.Shared.Models.Formacoes
+
+@inject IToastService toastService
+@inject HttpClient client
+@inject IJSRuntime js
+
+<AuthorizeView Context="authContext" Roles="@("Administrador")">
+    <Authorized>
+        <BreadCrumb breadCrumbs="breadCrumbs"></BreadCrumb>
+        <div class="container-fluid">
+
+            <div class="row">
+                <div class="col-12 col-md-12 col-lg-12">
+                    <SfCard ID="Funcoes">
+                        <CardHeader Title="Assistências" />
+                        <CardContent>
+                            <SpinLoader IsLoading="@(listaAccoesFormacao== null)">
+                                <LoadingTemplate>
+                                    <div class="modal-overlay">
+                                        <Chase Color="#ff0000" Size="60px" Center="true" />
+                                    </div>
+                                </LoadingTemplate>
+                                <ContentTemplate>
+                                    @if (listaAccoesFormacao.Count == 0)
+                                    {
+                                        <text>Não foram encontrados registos na base de dados</text>
+                                    }
+                                    else
+                                    {
+                                        <SfButton OnClick="ExcelExport" IconCss="e-icons e-export_excel" IconPosition="IconPosition.Left" Content="Excel"></SfButton>
+                                        <br />
+                                        <br />
+                                        <SfGrid @ref="DefaultGridLista" TValue="ListagemAccoesMyWay" DataSource="@listaAccoesFormacao"
+                                                AllowExcelExport="true" AllowFiltering="true" AllowPaging="true">
+                                            <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
+                                            <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false"></GridEditSettings>
+                                            <GridPageSettings PageCount="25"></GridPageSettings>
+                                            @*<GridEvents QueryCellInfo="CustomizeCell" TValue="ListagemMyWay"></GridEvents>*@
+                                            <GridColumns>
+                                                <GridColumn Field=@nameof(ListagemAccoesMyWay.FormandoID) TextAlign="TextAlign.Right"
+                                                            Visible="false" IsPrimaryKey="true"></GridColumn>
+                                                <GridColumn Field=@nameof(ListagemAccoesMyWay.Formando) HeaderText="Formando"></GridColumn>
+                                                <GridColumn Field=@nameof(ListagemAccoesMyWay.Ativo) HeaderText="Ativo?"></GridColumn>
+                                                @*<GridColumn Field=@nameof(ListagemAccoesMyWay.SecurityInit) HeaderText="security 13" Format="d" Type="ColumnType.Date"></GridColumn>
+                                                <GridColumn Field=@nameof(ListagemAccoesMyWay.SecurityEnd) HeaderText="" Format="d" Type="ColumnType.Date"></GridColumn>*@
+                                            </GridColumns>
+                                        </SfGrid>
+                                    }
+                                </ContentTemplate>
+                                <FaultedContentTemplate>
+                                    <text>ERRO! Por favor contacte o administrador do sistema!</text>
+                                </FaultedContentTemplate>
+                            </SpinLoader>
+                        </CardContent>
+                        <CardFooter>
+                            <CardFooterContent>
+                                @*<span class="d-inline-block" tabindex="0" data-toggle="tooltip" data-placement="top"
+                                          title="Criar nova unidade de handling">
+                                        <button type="button" class="btn btn-success"
+                                                data-toggle="modal" data-target="#uhModal"
+                                                @onclick="@(() => PrepareToAdd())">
+                                            <i class="fas fa-plus"></i>&nbsp;Criar
+                                        </button>
+                                    </span>*@
+                            </CardFooterContent>
+                        </CardFooter>
+                    </SfCard>
+                </div>
+            </div>
+        </div>
+    </Authorized>
+    <Authorizing>
+        <h1>Loading ...</h1>
+    </Authorizing>
+</AuthorizeView>
+
+
+<style>
+    .e-export_excel:before {
+        content: '\e74e';
+    }
+</style>
+
+@code {
+    private SfGrid<ListagemAccoesMyWay> DefaultGridLista;
+    public List<BreadCrumbData> breadCrumbs = new List<BreadCrumbData>();
+    List<ListagemAccoesMyWay> listaAccoesFormacao { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        BreadCrumbData breadCrumb = new BreadCrumbData
+        {
+            Text = "Início",
+            Url = "/"
+        };
+        breadCrumbs.Add(breadCrumb);
+
+        await FillData();
+    }
+
+    public async Task FillData()
+    {
+        listaAccoesFormacao = await client.GetFromJsonAsync<List<ListagemAccoesMyWay>>("api/accaoFormacao/getListagemMyWay");
+
+        StateHasChanged();
+    }
+
+    public async void OnSuccess(SuccessEventArgs args)
+    {
+        var customHeader = args.Response.Headers.Split(new Char[] { '\n' })[1]; // To split the response header values
+        var key = customHeader.Split(new Char[] { ':' })[0]; // To get the key pair of provided custom data in header
+        var value = customHeader.Split(new Char[] { ':' })[1].Trim(); // To get the value for the key pair of provided custom data in header
+
+        if (key == "registos")
+        {
+            await Task.Delay(100);
+            toastService.ShowSuccess(value, "Sucesso!");
+        }
+
+        await FillData();
+    }
+
+    public async Task ExcelExport()
+    {
+        await this.DefaultGridLista.ExcelExport();
+    }
+
+    public void CustomizeCell(QueryCellInfoEventArgs<ListagemAccoesFormacao> args)
+    {
+        //if (args.Column.Field == "DataValidade")
+        //{
+        //    if (args.Data.DataValidade.Date < DateTime.UtcNow.Date)
+        //    {
+        //        args.Cell.AddClass(new string[] { "caducado" });
+        //    }
+        //    else if (args.Data.DataValidade.Date >= DateTime.UtcNow.Date &&
+        //        args.Data.DataValidade.Date <= DateTime.UtcNow.AddMonths(-1).Date)
+        //    {
+        //        args.Cell.AddClass(new string[] { "ummes" });
+        //    }
+        //    else if (args.Data.DataValidade.Date >= DateTime.UtcNow.AddMonths(-1).Date &&
+        //        args.Data.DataValidade.Date <= DateTime.UtcNow.AddMonths(-3).Date)
+        //    {
+        //        args.Cell.AddClass(new string[] { "tresmeses" });
+        //    }
+        //    else { }
+        //}
+    }
+}
+<style>
+    .caducado {
+        background-color: red;
+    }
+
+    .tresmeses {
+        background-color: lawngreen;
+    }
+
+    .ummes {
+        background-color: yellow
+    }
+</style>

@@ -7,7 +7,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MyWay2021.Server.Data;
 using MyWay2021.Server.Models.Identity;
-using MyWay2021.Shared.DAL;
 using System;
 using System.Threading.Tasks;
 

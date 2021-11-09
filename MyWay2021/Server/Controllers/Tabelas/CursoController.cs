@@ -5,7 +5,7 @@ using MyWay2021.Shared.Models.Tabelas;
 using System;
 using System.Threading.Tasks;
 
-namespace MyWay2021.Server.Controllers.Colaboradores
+namespace MyWay2021.Server.Controllers.Tabelas
 {
     [Route("api/[controller]")]
     [ApiController]
