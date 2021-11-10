@@ -5,8 +5,9 @@ namespace MyWay2021.Shared.Models.Formacoes
     public class ListagemAccoesMyWay
     {
         public Guid FormandoID { get; set; }
-        public bool Ativo { get; set; }
-        public int NumPw { get; set; }
+        public string UnidadeHandling { get; set; }
+        public bool? Ativo { get; set; }
+        public int? NumPw { get; set; }
         public string Formando { get; set; }
         public DateTime? SecurityInit { get; set; }
         public DateTime? SecurityEnd { get; set; }

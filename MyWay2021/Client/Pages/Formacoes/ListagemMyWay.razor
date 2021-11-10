@@ -36,18 +36,63 @@
                                         <br />
                                         <br />
                                         <SfGrid @ref="DefaultGridLista" TValue="ListagemAccoesMyWay" DataSource="@listaAccoesFormacao"
-                                                AllowExcelExport="true" AllowFiltering="true" AllowPaging="true">
-                                            <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
+                                                AllowExcelExport="true" AllowFiltering="true" AllowPaging="true" AllowSorting="true" GridLines="GridLine.Both">
+                                            <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Menu"></GridFilterSettings>
                                             <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false"></GridEditSettings>
-                                            <GridPageSettings PageCount="25"></GridPageSettings>
-                                            @*<GridEvents QueryCellInfo="CustomizeCell" TValue="ListagemMyWay"></GridEvents>*@
+                                            <GridPageSettings PageSize="50"></GridPageSettings>
+                                            <GridEvents QueryCellInfo="CustomizeCell" TValue="ListagemAccoesMyWay"></GridEvents>
                                             <GridColumns>
-                                                <GridColumn Field=@nameof(ListagemAccoesMyWay.FormandoID) TextAlign="TextAlign.Right"
-                                                            Visible="false" IsPrimaryKey="true"></GridColumn>
-                                                <GridColumn Field=@nameof(ListagemAccoesMyWay.Formando) HeaderText="Formando"></GridColumn>
-                                                <GridColumn Field=@nameof(ListagemAccoesMyWay.Ativo) HeaderText="Ativo?"></GridColumn>
-                                                @*<GridColumn Field=@nameof(ListagemAccoesMyWay.SecurityInit) HeaderText="security 13" Format="d" Type="ColumnType.Date"></GridColumn>
-                                                <GridColumn Field=@nameof(ListagemAccoesMyWay.SecurityEnd) HeaderText="" Format="d" Type="ColumnType.Date"></GridColumn>*@
+                                                <GridColumn HeaderText="Formando">
+                                                    <GridColumns>
+                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.FormandoID) TextAlign="TextAlign.Right"
+                                                                    Visible="false" IsPrimaryKey="true"></GridColumn>
+                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.Formando) HeaderText="Nome" Width="300px"></GridColumn>
+                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.Ativo) HeaderText="Ativo?"></GridColumn>
+                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.UnidadeHandling) HeaderText="UH"></GridColumn>
+                                                    </GridColumns>
+                                                </GridColumn>
+                                                <GridColumn HeaderText="Security 13">
+                                                    <GridColumns>
+                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.SecurityInit) HeaderText="Data Acção" Format="d" Type="ColumnType.Date"></GridColumn>
+                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.SecurityEnd) HeaderText="Validade" Format="d" Type="ColumnType.Date"></GridColumn>
+                                                    </GridColumns>
+                                                </GridColumn>
+                                                <GridColumn HeaderText="DGR CAT9">
+                                                    <GridColumns>
+                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.DGRInit) HeaderText="Data Acção" Format="d" Type="ColumnType.Date"></GridColumn>
+                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.DGREnd) HeaderText="Validade" Format="d" Type="ColumnType.Date"></GridColumn>
+                                                    </GridColumns>
+                                                </GridColumn>
+                                                <GridColumn HeaderText="BPMR">
+                                                    <GridColumns>
+                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.BPMRInit) HeaderText="Data Acção" Format="d" Type="ColumnType.Date"></GridColumn>
+                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.BPMREnd) HeaderText="Validade" Format="d" Type="ColumnType.Date"></GridColumn>
+                                                    </GridColumns>
+                                                </GridColumn>
+                                                <GridColumn HeaderText="S&C">
+                                                    <GridColumns>
+                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.SCInit) HeaderText="Data Acção" Format="d" Type="ColumnType.Date"></GridColumn>
+                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.SCEnd) HeaderText="Validade" Format="d" Type="ColumnType.Date"></GridColumn>
+                                                    </GridColumns>
+                                                </GridColumn>
+                                                <GridColumn HeaderText="ENB">
+                                                    <GridColumns>
+                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.ENBInit) HeaderText="Data Acção" Format="d" Type="ColumnType.Date"></GridColumn>
+                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.ENBEnd) HeaderText="Validade" Format="d" Type="ColumnType.Date"></GridColumn>
+                                                    </GridColumns>
+                                                </GridColumn>
+                                                <GridColumn HeaderText="SMS">
+                                                    <GridColumns>
+                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.SMSInit) HeaderText="Data Acção" Format="d" Type="ColumnType.Date"></GridColumn>
+                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.SMSEnd) HeaderText="Validade" Format="d" Type="ColumnType.Date"></GridColumn>
+                                                    </GridColumns>
+                                                </GridColumn>
+                                                <GridColumn HeaderText="SST">
+                                                    <GridColumns>
+                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.SSTInit) HeaderText="Data Acção" Format="d" Type="ColumnType.Date"></GridColumn>
+                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.SSTEnd) HeaderText="Validade" Format="d" Type="ColumnType.Date"></GridColumn>
+                                                    </GridColumns>
+                                                </GridColumn>
                                             </GridColumns>
                                         </SfGrid>
                                     }
@@ -59,14 +104,7 @@
                         </CardContent>
                         <CardFooter>
                             <CardFooterContent>
-                                @*<span class="d-inline-block" tabindex="0" data-toggle="tooltip" data-placement="top"
-                                          title="Criar nova unidade de handling">
-                                        <button type="button" class="btn btn-success"
-                                                data-toggle="modal" data-target="#uhModal"
-                                                @onclick="@(() => PrepareToAdd())">
-                                            <i class="fas fa-plus"></i>&nbsp;Criar
-                                        </button>
-                                    </span>*@
+
                             </CardFooterContent>
                         </CardFooter>
                     </SfCard>
@@ -79,10 +117,23 @@
     </Authorizing>
 </AuthorizeView>
 
-
-<style>
+<style type="text/css" class="cssStyles">
+    .e-grid .e-altrow {
+        background-color: #fafafa;
+    }
     .e-export_excel:before {
         content: '\e74e';
+    }
+    .caducado {
+        background-color: red;
+    }
+
+    .tresmeses {
+        background-color: lawngreen;
+    }
+
+    .ummes {
+        background-color: yellow
     }
 </style>
 
@@ -127,41 +178,131 @@
 
     public async Task ExcelExport()
     {
-        await this.DefaultGridLista.ExcelExport();
+        ExcelExportProperties ExcelProperties = new ExcelExportProperties();
+        ExcelProperties.FileName = "ListagemCaducidades.xlsx";
+        await this.DefaultGridLista.ExcelExport(ExcelProperties);
     }
 
-    public void CustomizeCell(QueryCellInfoEventArgs<ListagemAccoesFormacao> args)
+    public void CustomizeCell(QueryCellInfoEventArgs<ListagemAccoesMyWay> args)
     {
-        //if (args.Column.Field == "DataValidade")
-        //{
-        //    if (args.Data.DataValidade.Date < DateTime.UtcNow.Date)
-        //    {
-        //        args.Cell.AddClass(new string[] { "caducado" });
-        //    }
-        //    else if (args.Data.DataValidade.Date >= DateTime.UtcNow.Date &&
-        //        args.Data.DataValidade.Date <= DateTime.UtcNow.AddMonths(-1).Date)
-        //    {
-        //        args.Cell.AddClass(new string[] { "ummes" });
-        //    }
-        //    else if (args.Data.DataValidade.Date >= DateTime.UtcNow.AddMonths(-1).Date &&
-        //        args.Data.DataValidade.Date <= DateTime.UtcNow.AddMonths(-3).Date)
-        //    {
-        //        args.Cell.AddClass(new string[] { "tresmeses" });
-        //    }
-        //    else { }
-        //}
+        if (args.Column.Field == "SecurityEnd")
+        {
+            if (args.Data.SecurityEnd < DateTime.UtcNow.Date)
+            {
+                args.Cell.AddClass(new string[] { "caducado" });
+            }
+            else if (args.Data.SecurityEnd >= DateTime.UtcNow.Date &&
+            args.Data.SecurityEnd <= DateTime.UtcNow.AddMonths(1).Date)
+            {
+                args.Cell.AddClass(new string[] { "ummes" });
+            }
+            else if (args.Data.SecurityEnd >= DateTime.UtcNow.AddMonths(1).Date &&
+            args.Data.SecurityEnd <= DateTime.UtcNow.AddMonths(3).Date)
+            {
+                args.Cell.AddClass(new string[] { "tresmeses" });
+            }
+        }
+        if (args.Column.Field == "DGREnd")
+        {
+            if (args.Data.DGREnd < DateTime.UtcNow.Date)
+            {
+                args.Cell.AddClass(new string[] { "caducado" });
+            }
+            else if (args.Data.DGREnd >= DateTime.UtcNow.Date &&
+            args.Data.DGREnd <= DateTime.UtcNow.AddMonths(1).Date)
+            {
+                args.Cell.AddClass(new string[] { "ummes" });
+            }
+            else if (args.Data.DGREnd >= DateTime.UtcNow.AddMonths(1).Date &&
+            args.Data.DGREnd <= DateTime.UtcNow.AddMonths(3).Date)
+            {
+                args.Cell.AddClass(new string[] { "tresmeses" });
+            }
+        }
+        if (args.Column.Field == "BPMREnd")
+        {
+            if (args.Data.BPMREnd < DateTime.UtcNow.Date)
+            {
+                args.Cell.AddClass(new string[] { "caducado" });
+            }
+            else if (args.Data.BPMREnd >= DateTime.UtcNow.Date &&
+            args.Data.BPMREnd <= DateTime.UtcNow.AddMonths(1).Date)
+            {
+                args.Cell.AddClass(new string[] { "ummes" });
+            }
+            else if (args.Data.BPMREnd >= DateTime.UtcNow.AddMonths(1).Date &&
+            args.Data.BPMREnd <= DateTime.UtcNow.AddMonths(3).Date)
+            {
+                args.Cell.AddClass(new string[] { "tresmeses" });
+            }
+        }
+        if (args.Column.Field == "SCEnd")
+        {
+            if (args.Data.SCEnd < DateTime.UtcNow.Date)
+            {
+                args.Cell.AddClass(new string[] { "caducado" });
+            }
+            else if (args.Data.SCEnd >= DateTime.UtcNow.Date &&
+            args.Data.SCEnd <= DateTime.UtcNow.AddMonths(1).Date)
+            {
+                args.Cell.AddClass(new string[] { "ummes" });
+            }
+            else if (args.Data.SCEnd >= DateTime.UtcNow.AddMonths(1).Date &&
+            args.Data.SCEnd <= DateTime.UtcNow.AddMonths(3).Date)
+            {
+                args.Cell.AddClass(new string[] { "tresmeses" });
+            }
+        }
+        if (args.Column.Field == "ENBEnd")
+        {
+            if (args.Data.ENBEnd < DateTime.UtcNow.Date)
+            {
+                args.Cell.AddClass(new string[] { "caducado" });
+            }
+            else if (args.Data.ENBEnd >= DateTime.UtcNow.Date &&
+            args.Data.ENBEnd <= DateTime.UtcNow.AddMonths(1).Date)
+            {
+                args.Cell.AddClass(new string[] { "ummes" });
+            }
+            else if (args.Data.ENBEnd >= DateTime.UtcNow.AddMonths(1).Date &&
+            args.Data.ENBEnd <= DateTime.UtcNow.AddMonths(3).Date)
+            {
+                args.Cell.AddClass(new string[] { "tresmeses" });
+            }
+        }
+        if (args.Column.Field == "SSTEnd")
+        {
+            if (args.Data.SSTEnd < DateTime.UtcNow.Date)
+            {
+                args.Cell.AddClass(new string[] { "caducado" });
+            }
+            else if (args.Data.SSTEnd >= DateTime.UtcNow.Date &&
+            args.Data.SSTEnd <= DateTime.UtcNow.AddMonths(1).Date)
+            {
+                args.Cell.AddClass(new string[] { "ummes" });
+            }
+            else if (args.Data.SSTEnd >= DateTime.UtcNow.AddMonths(1).Date &&
+            args.Data.SSTEnd <= DateTime.UtcNow.AddMonths(3).Date)
+            {
+                args.Cell.AddClass(new string[] { "tresmeses" });
+            }
+        }
+        if (args.Column.Field == "SMSEnd")
+        {
+            if (args.Data.SMSEnd < DateTime.UtcNow.Date)
+            {
+                args.Cell.AddClass(new string[] { "caducado" });
+            }
+            else if (args.Data.SMSEnd >= DateTime.UtcNow.Date &&
+            args.Data.SMSEnd <= DateTime.UtcNow.AddMonths(1).Date)
+            {
+                args.Cell.AddClass(new string[] { "ummes" });
+            }
+            else if (args.Data.SMSEnd >= DateTime.UtcNow.AddMonths(1).Date &&
+            args.Data.SMSEnd <= DateTime.UtcNow.AddMonths(3).Date)
+            {
+                args.Cell.AddClass(new string[] { "tresmeses" });
+            }
+        }
     }
 }
-<style>
-    .caducado {
-        background-color: red;
-    }
-
-    .tresmeses {
-        background-color: lawngreen;
-    }
-
-    .ummes {
-        background-color: yellow
-    }
-</style>
