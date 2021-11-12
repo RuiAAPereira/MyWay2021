@@ -28,10 +28,10 @@ namespace MyWay2021.Server.Controllers.Tabelas
         {
             ClaimsPrincipal currentUser = User;
             var userId = _userManager.GetUserId(User);
-            var userUhs = await _db.UsersUhs.Where(u => u.UserId == new Guid(userId)).Select(i=> i.UhID).ToListAsync();
-            var uhs = await _db.Uhs.Where(u => userUhs.Contains(u.ID)).Select(n=> n.ID).ToListAsync();
+            var userUhs = await _db.UsersUhs.Where(u => u.UserId == new Guid(userId)).Select(i => i.UhID).ToListAsync();
+            var uhs = await _db.Uhs.Where(u => userUhs.Contains(u.ID)).Select(n => n.ID).ToListAsync();
 
-            var historico = await _db.HistoricoAssistencias.Where(u=> uhs.Contains(u.UhID)).ToListAsync();
+            var historico = await _db.HistoricoAssistencias.Where(u => uhs.Contains(u.UhID)).ToListAsync();
             return Ok(historico);
         }
 

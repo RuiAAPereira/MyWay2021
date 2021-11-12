@@ -13,7 +13,7 @@ namespace MyWay2021.Shared.Models.Relatorios
         [ForeignKey("RelatorioDiario")]
         public Guid RelatorioID { get; set; }
         [Display(Name = "STAFF:")]
-        public Guid FuncaoID { get; set;}
+        public Guid FuncaoID { get; set; }
         public Funcao Funcao { get; set; }
         [Display(Name = "PNT:")]
         public int Pnt { get; set; }

@@ -31,7 +31,7 @@
                                                 <tr>
                                                     <th scope="col">Menu</th>
                                                     <th scope="col">Nome</th>
-                                                    @if (@authContext.User.IsInRole("temp")) //substituir por Admins
+                                                    @if (@authContext.User.IsInRole("Admins")) //substituir por Admins
                                                     {
                                                         <th scope="col">Criado em:</th>
                                                         <th scope="col">Criado por:</th>
@@ -63,7 +63,7 @@
                                                             </span>
                                                         </td>
                                                         <td>@funcao.Nome</td>
-                                                        @if (@authContext.User.IsInRole("temp")) //substituir por Admins
+                                                        @if (@authContext.User.IsInRole("Admins")) //substituir por Admins
                                                         {
                                                             <td>@funcao.CreatedAt</td>
                                                             <td>@funcao.CreatedBy</td>

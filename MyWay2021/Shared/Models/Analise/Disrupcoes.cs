@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace MyWay2021.Shared.Models.Analise
+﻿namespace MyWay2021.Shared.Models.Analise
 {
     public class Disrupcoes
     {

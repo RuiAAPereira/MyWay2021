@@ -210,9 +210,11 @@
                                                                             }
                                                                             else
                                                                             {
-                                                                                <h3>
-                                                                                    Não existem dados para este dia, por favor faça upload dos dados <NavLink href="/Customers/Customer/A123">aqui</NavLink>!
-                                                                                </h3>
+                                                                                <div class="row p-4">
+                                                                                    <p>
+                                                                                        Não existem dados para este dia, por favor faça upload dos dados <NavLink href="/UploadData">aqui</NavLink>!
+                                                                                    </p>
+                                                                                </div>
                                                                             }
                                                                         }
                                                                     </ContentTemplate>
@@ -334,8 +336,7 @@
                                                                                                             @((int)Math.Round((double)(100 * AssistenciasAmanhaOutras) / AssistenciasAmanha))% Do total de assistências hoje (@AssistenciasAmanha)
                                                                                                         </span>
                                                                                                     </div>
-                                                                                                </div>
-                                                                                                }
+                                                                                                </div
                                                                                             </div>
                                                                                         </div>
                                                                                         <div class="row">

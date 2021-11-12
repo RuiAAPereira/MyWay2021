@@ -179,7 +179,7 @@ namespace MyWay2021.Server.Controllers.FileUpload
                     excelTable.Columns.Contains("Ck In")
                 )
             {
-                 return true;
+                return true;
             }
             else
             {
@@ -241,7 +241,7 @@ namespace MyWay2021.Server.Controllers.FileUpload
                 AssistenciasPRM exists = new AssistenciasPRM();
 
                 exists = _db.AssistenciasPRMS
-                    .Where(d => 
+                    .Where(d =>
                         d.Aeroporto == aeroporto &&
                         d.Data.Date.Day == data.Date.Day &&
                         d.Voo == voo &&
@@ -335,7 +335,7 @@ namespace MyWay2021.Server.Controllers.FileUpload
                 string paramNome = (schengen == true) ? "CPS" : "CPN";
 
                 Parametro queryParam = _db.Parametros.FirstOrDefault(p => p.ParamNome.Equals(paramNome));
-                int tempoTotal = (int)queryParam.ParamValue;
+                int tempoTotal = queryParam.ParamValue;
                 return tempoTotal;
             }
             else

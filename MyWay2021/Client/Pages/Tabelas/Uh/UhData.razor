@@ -34,7 +34,7 @@
                                                     <th scope="col">IATA</th>
                                                     <th scope="col">Cod.</th>
                                                     <th scope="col">Aeroporto</th>
-                                                    @if (@authContext.User.IsInRole("temp")) //substituir por Admins
+                                                    @if (@authContext.User.IsInRole("Admins")) //substituir por Admins
                                                     {
                                                         <th scope="col">Criado em:</th>
                                                         <th scope="col">Criado por:</th>
@@ -69,7 +69,7 @@
                                                     <td>@uh.IATA</td>
                                                     <td>@uh.CodAeroporto</td>
                                                     <td>@uh.NomeAeroporto</td>
-                                                    @if (@authContext.User.IsInRole("temp")) //substituir por Admins
+                                                    @if (@authContext.User.IsInRole("Admins")) //substituir por Admins
                                                     {
                                                         <td>@uh.CreatedAt</td>
                                                         <td>@uh.CreatedBy</td>

@@ -1,6 +1,6 @@
-﻿using MyWay2021.Shared.Models.Tabelas;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using MyWay2021.Shared.Models.Tabelas;
 using System;
 
 namespace MyWay2021.Server.Configuration
@@ -14,7 +14,7 @@ namespace MyWay2021.Server.Configuration
                 {
                     ParamID = new Guid("87bfaa02-ea40-43f5-827f-ecc16a224e59"),
                     ParamNome = "CPS",
-                    ParamDesc= "Chegada PAX Schengen ao aeroporto",
+                    ParamDesc = "Chegada PAX Schengen ao aeroporto",
                     ParamValue = 120
                 },
                 new Parametro

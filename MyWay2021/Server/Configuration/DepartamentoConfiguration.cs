@@ -1,6 +1,6 @@
-﻿using MyWay2021.Shared.Models.Tabelas;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using MyWay2021.Shared.Models.Tabelas;
 using System;
 
 namespace MyWay2021.Server.Configuration

@@ -1,5 +1,5 @@
-﻿using MyWay2021.Shared.Models.Identity;
-using Microsoft.AspNetCore.Components.Authorization;
+﻿using Microsoft.AspNetCore.Components.Authorization;
+using MyWay2021.Shared.Models.Identity;
 using System;
 using System.Linq;
 using System.Net.Http;

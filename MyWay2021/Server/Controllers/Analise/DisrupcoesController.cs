@@ -50,11 +50,11 @@ namespace MyWay2021.Server.Controllers.Analise
             List<string> mangas = _db.Stands.Where(s => s.Remoto == false).Select(s => s.StandN.ToString()).ToList();
 
             List<string> totalVoos = _db.DadosAeroportos.Where(d => uhs.Contains(d.UhID) &&
-                d.ScheduleTimeUTC.Date >= datainicio.Date && d.ScheduleTimeUTC.Date <= datafim.Date).Select(v=>v.Voo).ToList();
+                d.ScheduleTimeUTC.Date >= datainicio.Date && d.ScheduleTimeUTC.Date <= datafim.Date).Select(v => v.Voo).ToList();
 
             int totalVoosAssistencias = _db.HistoricoAssistencias.Where(d => uhs.Contains(d.UhID) &&
                 d.Data.Date >= datainicio.Date && d.Data.Date <= datafim.Date && totalVoos.Contains(d.Voo)
-                ).GroupBy(d=> new { d.Data.Date, d.Voo }).Count();
+                ).GroupBy(d => new { d.Data.Date, d.Voo }).Count();
 
             //var results = _customerTable.GroupBy(c => new { c.Date, c.CUSTOMER_TYPE_ID }).Select(g => new { g.Key.Date, g.Key.CUSTOMER_TYPE_ID, MyCount = g.Count() });
 
@@ -88,7 +88,7 @@ namespace MyWay2021.Server.Controllers.Analise
 
             List<Disrupcoes> dados = new()
             {
-                new Disrupcoes { Nome = "Total de assistências", Total = totalPMR, Percentagem=string.Empty, Color = "#00c0ef", Icon = "fa fa-wheelchair", BgColor = "bg-green" },
+                new Disrupcoes { Nome = "Total de assistências", Total = totalPMR, Percentagem = string.Empty, Color = "#00c0ef", Icon = "fa fa-wheelchair", BgColor = "bg-green" },
                 new Disrupcoes { Nome = "Total de voos", Total = totalVoos.Count, Percentagem = string.Empty, Color = "#00c0ef", Icon = "fa fa-plane", BgColor = "bg-aqua" },
                 new Disrupcoes { Nome = "Voos com assistências", Total = totalVoosAssistencias, Percentagem = CalculaPercentagem(totalVoosAssistencias, totalVoos.Count) + "% do total de voos", Color = "#00a65a", Icon = "fa fa-wheelchair", BgColor = "bg-green" },
                 new Disrupcoes { Nome = "Total de disrupções", Total = totalDisrupcoes, Percentagem = CalculaPercentagem(totalDisrupcoes, totalVoos.Count) + "% do total de voos", Color = "#d33724", Icon = "fa fa-angle-left", BgColor = "bg-red" },

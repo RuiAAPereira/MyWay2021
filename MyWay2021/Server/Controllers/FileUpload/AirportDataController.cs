@@ -82,7 +82,7 @@ namespace MyWay2021.Server.Controllers.FileUpload
             {
                 Response.Headers.Add(StatusKey, StatusValue);
             }
-            
+
 
         }
 

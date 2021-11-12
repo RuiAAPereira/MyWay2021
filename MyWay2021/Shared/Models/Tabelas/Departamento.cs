@@ -1,9 +1,6 @@
-﻿using MyWay2021.Shared.Models.Colaboradores;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Text;
 
 namespace MyWay2021.Shared.Models.Tabelas
 {

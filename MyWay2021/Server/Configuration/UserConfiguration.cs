@@ -1,8 +1,8 @@
-﻿using MyWay2021.Server.Models.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using MyWay2021.Server.Models.Identity;
 using System;
-using Microsoft.AspNetCore.Identity;
 
 namespace MyWay2021.Server.Configuration
 {

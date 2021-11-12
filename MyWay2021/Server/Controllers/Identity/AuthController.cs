@@ -1,10 +1,10 @@
-﻿using MyWay2021.Server.Data;
-using MyWay2021.Server.Models.Identity;
-using MyWay2021.Shared.Models.Identity;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MyWay2021.Server.Data;
+using MyWay2021.Server.Models.Identity;
+using MyWay2021.Shared.Models.Identity;
 using System;
 using System.Linq;
 using System.Security.Claims;

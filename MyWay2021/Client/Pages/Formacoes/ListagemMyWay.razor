@@ -19,7 +19,7 @@
                     <SfCard ID="Funcoes">
                         <CardHeader Title="Assistências" />
                         <CardContent>
-                            <SpinLoader IsLoading="@(listaAccoesFormacao== null)">
+                            <SpinLoader IsLoading="@(listaAccoesFormacao == null)">
                                 <LoadingTemplate>
                                     <div class="modal-overlay">
                                         <Chase Color="#ff0000" Size="60px" Center="true" />
@@ -36,61 +36,79 @@
                                         <br />
                                         <br />
                                         <SfGrid @ref="DefaultGridLista" TValue="ListagemAccoesMyWay" DataSource="@listaAccoesFormacao"
-                                                AllowExcelExport="true" AllowFiltering="true" AllowPaging="true" AllowSorting="true" GridLines="GridLine.Both">
+                                                AllowExcelExport="true" AllowFiltering="true" AllowPaging="true" AllowSorting="true" 
+                                                Width="100%" GridLines="GridLine.Both">
                                             <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Menu"></GridFilterSettings>
                                             <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false"></GridEditSettings>
-                                            <GridPageSettings PageSize="50"></GridPageSettings>
+                                            <GridPageSettings PageSize="25"></GridPageSettings>
                                             <GridEvents QueryCellInfo="CustomizeCell" TValue="ListagemAccoesMyWay"></GridEvents>
                                             <GridColumns>
                                                 <GridColumn HeaderText="Formando">
                                                     <GridColumns>
                                                         <GridColumn Field=@nameof(ListagemAccoesMyWay.FormandoID) TextAlign="TextAlign.Right"
                                                                     Visible="false" IsPrimaryKey="true"></GridColumn>
-                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.Formando) HeaderText="Nome" Width="300px"></GridColumn>
-                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.Ativo) HeaderText="Ativo?"></GridColumn>
-                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.UnidadeHandling) HeaderText="UH"></GridColumn>
+                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.Formando) HeaderText="Nome"
+                                                                    Width="250px"></GridColumn>
+                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.Ativo) HeaderText="Ativo? 
+                                                                    "Width="100px"></GridColumn>
+                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.UnidadeHandling) HeaderText="UH" 
+                                                                    Width="100px"></GridColumn>
                                                     </GridColumns>
                                                 </GridColumn>
                                                 <GridColumn HeaderText="Security 13">
                                                     <GridColumns>
-                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.SecurityInit) HeaderText="Data Acção" Format="d" Type="ColumnType.Date"></GridColumn>
-                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.SecurityEnd) HeaderText="Validade" Format="d" Type="ColumnType.Date"></GridColumn>
+                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.SecurityInit) HeaderText="Data Acção"
+                                                                    Format="d" Type="ColumnType.Date" Width="100px"></GridColumn>
+                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.SecurityEnd) HeaderText="Validade"
+                                                                    Format="d" Type="ColumnType.Date" Width="100px"></GridColumn>
                                                     </GridColumns>
                                                 </GridColumn>
                                                 <GridColumn HeaderText="DGR CAT9">
                                                     <GridColumns>
-                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.DGRInit) HeaderText="Data Acção" Format="d" Type="ColumnType.Date"></GridColumn>
-                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.DGREnd) HeaderText="Validade" Format="d" Type="ColumnType.Date"></GridColumn>
+                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.DGRInit) HeaderText="Data Acção"
+                                                                    Format="d" Type="ColumnType.Date" Width="100px"></GridColumn>
+                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.DGREnd) HeaderText="Validade"
+                                                                    Format="d" Type="ColumnType.Date" Width="100px"></GridColumn>
                                                     </GridColumns>
                                                 </GridColumn>
                                                 <GridColumn HeaderText="BPMR">
                                                     <GridColumns>
-                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.BPMRInit) HeaderText="Data Acção" Format="d" Type="ColumnType.Date"></GridColumn>
-                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.BPMREnd) HeaderText="Validade" Format="d" Type="ColumnType.Date"></GridColumn>
+                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.BPMRInit) HeaderText="Data Acção"
+                                                                    Format="d" Type="ColumnType.Date" Width="100px"></GridColumn>
+                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.BPMREnd) HeaderText="Validade"
+                                                                    Format="d" Type="ColumnType.Date" Width="100px"></GridColumn>
                                                     </GridColumns>
                                                 </GridColumn>
                                                 <GridColumn HeaderText="S&C">
                                                     <GridColumns>
-                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.SCInit) HeaderText="Data Acção" Format="d" Type="ColumnType.Date"></GridColumn>
-                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.SCEnd) HeaderText="Validade" Format="d" Type="ColumnType.Date"></GridColumn>
+                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.SCInit) HeaderText="Data Acção"
+                                                                    Format="d" Type="ColumnType.Date" Width="100px"></GridColumn>
+                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.SCEnd) HeaderText="Validade"
+                                                                    Format="d" Type="ColumnType.Date" Width="100px"></GridColumn>
                                                     </GridColumns>
                                                 </GridColumn>
                                                 <GridColumn HeaderText="ENB">
                                                     <GridColumns>
-                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.ENBInit) HeaderText="Data Acção" Format="d" Type="ColumnType.Date"></GridColumn>
-                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.ENBEnd) HeaderText="Validade" Format="d" Type="ColumnType.Date"></GridColumn>
+                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.ENBInit) HeaderText="Data Acção"
+                                                                    Format="d" Type="ColumnType.Date" Width="100px"></GridColumn>
+                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.ENBEnd) HeaderText="Validade"
+                                                                    Format="d" Type="ColumnType.Date" Width="100px"></GridColumn>
                                                     </GridColumns>
                                                 </GridColumn>
                                                 <GridColumn HeaderText="SMS">
                                                     <GridColumns>
-                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.SMSInit) HeaderText="Data Acção" Format="d" Type="ColumnType.Date"></GridColumn>
-                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.SMSEnd) HeaderText="Validade" Format="d" Type="ColumnType.Date"></GridColumn>
+                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.SMSInit) HeaderText="Data Acção"
+                                                                    Format="d" Type="ColumnType.Date" Width="100px"></GridColumn>
+                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.SMSEnd) HeaderText="Validade"
+                                                                    Format="d" Type="ColumnType.Date" Width="100px"></GridColumn>
                                                     </GridColumns>
                                                 </GridColumn>
                                                 <GridColumn HeaderText="SST">
                                                     <GridColumns>
-                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.SSTInit) HeaderText="Data Acção" Format="d" Type="ColumnType.Date"></GridColumn>
-                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.SSTEnd) HeaderText="Validade" Format="d" Type="ColumnType.Date"></GridColumn>
+                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.SSTInit) HeaderText="Data Acção"
+                                                                    Format="d" Type="ColumnType.Date" Width="100px"></GridColumn>
+                                                        <GridColumn Field=@nameof(ListagemAccoesMyWay.SSTEnd) HeaderText="Validade"
+                                                                    Format="d" Type="ColumnType.Date" Width="100px"></GridColumn>
                                                     </GridColumns>
                                                 </GridColumn>
                                             </GridColumns>
@@ -104,7 +122,7 @@
                         </CardContent>
                         <CardFooter>
                             <CardFooterContent>
-
+                                <SfButton @onclick="onToggleClick" CssClass="e-flat" IsPrimary="true"></SfButton>
                             </CardFooterContent>
                         </CardFooter>
                     </SfCard>
@@ -120,6 +138,9 @@
 <style type="text/css" class="cssStyles">
     .e-grid .e-altrow {
         background-color: #fafafa;
+    }
+    .e-grid .e-rowcell {
+        font-size: 12px !important;
     }
     .e-export_excel:before {
         content: '\e74e';
@@ -304,5 +325,10 @@
                 args.Cell.AddClass(new string[] { "tresmeses" });
             }
         }
+    }
+
+    private void onToggleClick()
+    {
+
     }
 }

@@ -1,6 +1,6 @@
-﻿using MyWay2021.Server.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using MyWay2021.Server.Data;
 using MyWay2021.Shared.Models.Tabelas;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;

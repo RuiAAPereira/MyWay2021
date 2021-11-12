@@ -221,7 +221,7 @@
                                      .Select(x => x.ColumnName)
                                      .ToArray();
 
-            Array.ForEach(columnNames, Console.WriteLine);
+           // Array.ForEach(columnNames, Console.WriteLine);
 
             maxProgres = excelasTable.Rows.Count;
 
@@ -230,32 +230,32 @@
 
             if (columnNames.SequenceEqual(formacoesFile))
             {
-                Console.WriteLine("Ficheiro do forinsia");
+                //Console.WriteLine("Ficheiro do forinsia");
 
                 int i = 0;
 
                 foreach (DataRow row in excelasTable.Rows)
                 {
-                    Console.WriteLine(" ");
+                    //Console.WriteLine(" ");
                     string formando = RemoveDiacritics(row["Formando"].ToString());
-                    Console.WriteLine(formando);
+                    //Console.WriteLine(formando);
                     string curso = RemoveDiacritics(row["Curso"].ToString());
-                    Console.WriteLine(curso);
+                    //Console.WriteLine(curso);
                     string numPw = row["Nº funcionário"].ToString().Trim();
-                    Console.WriteLine(numPw);
+                    //Console.WriteLine(numPw);
                     DateTime dataFim = CsToDateTime(row["Data fim acção"].ToString());
-                    Console.WriteLine(dataFim);
+                    //Console.WriteLine(dataFim);
 
                     int? numFuncionario = null;
 
                     if (Int32.TryParse(numPw, out int n))
                     {
                         numFuncionario = n;
-                        Console.WriteLine(n);
+                        //Console.WriteLine(n);
                     }
                     else
                     {
-                        Console.WriteLine("Sem número portway.");
+                        //Console.WriteLine("Sem número portway.");
                     }
 
                     if (!colaboradores.Any(n => RemoveDiacritics(n.Nome) == formando))
@@ -265,7 +265,7 @@
                     }
 
                     Guid colaboradorID = colaboradores.Where(n => RemoveDiacritics(n.Nome) == formando).Select(i => i.ColaboradorID).FirstOrDefault();
-                    Console.WriteLine(colaboradorID);
+                    //Console.WriteLine(colaboradorID);
 
                     if (!cursos.Any(n => RemoveDiacritics(n.Designacao) == curso))
                     {
@@ -273,9 +273,9 @@
                     }
 
                     Guid cursoID = cursos.Where(n => RemoveDiacritics(n.Designacao) == curso).Select(i => i.CursoID).FirstOrDefault();
-                    Console.WriteLine(cursoID);
+                    //Console.WriteLine(cursoID);
 
-                    Console.WriteLine("a processar linha " + i++);
+                    //Console.WriteLine("a processar linha " + i++);
 
                     if (colaboradorID != Guid.Empty && cursoID != Guid.Empty)
                     {
@@ -298,19 +298,19 @@
             }
             else if (columnNames.SequenceEqual(moodleFile))
             {
-                Console.WriteLine("Ficheiro do moodle");
+                //Console.WriteLine("Ficheiro do moodle");
 
                 int i = 0;
 
                 foreach (DataRow row in excelasTable.Rows)
                 {
-                    Console.WriteLine(" ");
+                    //Console.WriteLine(" ");
                     string formando = RemoveDiacritics(row["nome"].ToString());
-                    Console.WriteLine(formando);
+                    //Console.WriteLine(formando);
                     string curso = RemoveDiacritics(row["curso"].ToString());
-                    Console.WriteLine(curso);
+                    //Console.WriteLine(curso);
                     DateTime dataFim = CsToDateTime(row["data"].ToString());
-                    Console.WriteLine(dataFim);
+                    //Console.WriteLine(dataFim);
 
                     if (!colaboradores.Any(n => RemoveDiacritics(n.Nome) == formando))
                     {
@@ -319,7 +319,7 @@
                     }
 
                     Guid colaboradorID = colaboradores.Where(n => RemoveDiacritics(n.Nome) == formando).Select(i => i.ColaboradorID).FirstOrDefault();
-                    Console.WriteLine(colaboradorID);
+                    //Console.WriteLine(colaboradorID);
 
                     if (!cursos.Any(n => RemoveDiacritics(n.Designacao) == curso))
                     {
@@ -327,9 +327,9 @@
                     }
 
                     Guid cursoID = cursos.Where(n => RemoveDiacritics(n.Designacao) == curso).Select(i => i.CursoID).FirstOrDefault();
-                    Console.WriteLine(cursoID);
+                    //Console.WriteLine(cursoID);
 
-                    Console.WriteLine("a processar linha " + i++);
+                    //Console.WriteLine("a processar linha " + i++);
 
                     if (colaboradorID != Guid.Empty && cursoID != Guid.Empty)
                     {
@@ -352,7 +352,7 @@
             }
             else
             {
-                Console.WriteLine("os cabeçalhos do ficheiro não coincidem");
+                //Console.WriteLine("os cabeçalhos do ficheiro não coincidem");
 
                 await this.ToastError.Show(Toast[1]);
 
@@ -418,7 +418,7 @@
 
             updated += 1;
             progress += 1;
-            Console.WriteLine("existem " + updated + " duplicados");
+            //Console.WriteLine("existem " + updated + " duplicados");
             base.StateHasChanged();
         }
         else
@@ -426,7 +426,7 @@
             await http.PostAsJsonAsync("api/accaoFormacao", current);
             inserted += 1;
             progress += 1;
-            Console.WriteLine("foram inseridas " + inserted + " linhas");
+            //Console.WriteLine("foram inseridas " + inserted + " linhas");
             base.StateHasChanged();
         }
     }

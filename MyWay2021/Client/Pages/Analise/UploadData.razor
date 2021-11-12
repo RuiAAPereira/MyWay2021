@@ -248,13 +248,13 @@
                                      .Select(x => x.ColumnName)
                                      .ToArray();
 
-            Array.ForEach(columnNames, Console.WriteLine);
+            //Array.ForEach(columnNames, Console.WriteLine);
 
             maxProgres = excelasTable.Rows.Count;
 
             if (columnNames.SequenceEqual(assist))
             {
-                Console.WriteLine("Ficheiro assistencias");
+                //Console.WriteLine("Ficheiro assistencias");
                 assistenciasPRMs = await http.GetFromJsonAsync<List<AssistenciasPRM>>("api/assistenciasPRM");
 
                 foreach (DataRow row in excelasTable.Rows)
@@ -322,7 +322,7 @@
                         await http.PutAsJsonAsync("api/assistenciasPRM", currentAssit);
                         updated += 1;
                         progress += 1;
-                        Console.WriteLine("existem " + updated + " duplicados");
+                        //Console.WriteLine("existem " + updated + " duplicados");
                         base.StateHasChanged();
                     }
                     else
@@ -330,7 +330,7 @@
                         await http.PostAsJsonAsync("api/assistenciasPRM", currentAssit);
                         inserted += 1;
                         progress += 1;
-                        Console.WriteLine("foram inseridas " + inserted + " linhas");
+                        //Console.WriteLine("foram inseridas " + inserted + " linhas");
                         base.StateHasChanged();
                     }
 
@@ -350,7 +350,7 @@
             }
             else if (columnNames.SequenceEqual(historico))
             {
-                Console.WriteLine("Ficheiro de histórico");
+                //Console.WriteLine("Ficheiro de histórico");
                 historicoAssistencias = await http.GetFromJsonAsync<List<HistoricoAssistencia>>("api/historicoAssistencias");
 
                 foreach (DataRow row in excelasTable.Rows)
@@ -420,7 +420,7 @@
                         await http.PutAsJsonAsync("api/historicoAssistencias", currentAssit);
                         updated += 1;
                         progress += 1;
-                        Console.WriteLine("existem " + updated + " duplicados");
+                        //Console.WriteLine("existem " + updated + " duplicados");
                         base.StateHasChanged();
                     }
                     else
@@ -428,7 +428,7 @@
                         await http.PostAsJsonAsync("api/historicoAssistencias", currentAssit);
                         inserted += 1;
                         progress += 1;
-                        Console.WriteLine("foram inseridas " + inserted + " linhas");
+                        //Console.WriteLine("foram inseridas " + inserted + " linhas");
                         base.StateHasChanged();
                     }
 
@@ -448,7 +448,7 @@
             }
             else if (columnNames.SequenceEqual(airportData))
             {
-                Console.WriteLine("ficheiro Arrivals");
+                //Console.WriteLine("ficheiro Arrivals");
                 dadosAeroportos = await http.GetFromJsonAsync<List<DadosAeroporto>>("api/dadosAeroporto");
                 foreach (DataRow row in excelasTable.Rows)
                 {
@@ -505,7 +505,7 @@
                         await http.PutAsJsonAsync("api/dadosAeroporto", currentData);
                         updated += 1;
                         progress += 1;
-                        Console.WriteLine("existem " + updated + " duplicados");
+                        //Console.WriteLine("existem " + updated + " duplicados");
                         base.StateHasChanged();
                     }
                     else
@@ -513,7 +513,7 @@
                         await http.PostAsJsonAsync("api/dadosAeroporto", currentData);
                         inserted += 1;
                         progress += 1;
-                        Console.WriteLine("foram inseridas " + inserted + " linhas");
+                        //Console.WriteLine("foram inseridas " + inserted + " linhas");
                         base.StateHasChanged();
                     }
 
@@ -533,7 +533,7 @@
             }
             else
             {
-                Console.WriteLine("os cabeçalhos do ficheiro não coincidem");
+                //Console.WriteLine("os cabeçalhos do ficheiro não coincidem");
 
                 await this.ToastError.Show(Toast[2]);
 
